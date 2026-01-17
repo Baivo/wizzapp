@@ -2885,16 +2885,38 @@
             `;
             
             // Render all available talents
-            document.getElementById('talentsSelection').innerHTML = allTalents.map(talent => {
-                const isGrantedTalent = grantedTalents.has(talent);
-                const talentChoice = talentChoiceMap[talent];
-                const isChosenFromChoice = talentChoice && talentChoice.chosen === talent;
-                const isUnchosenOption = talentChoice && !isChosenFromChoice;
-                const hasTalent = currentCharacter.talents.includes(talent);
-                
-                const cost = isGrantedTalent ? 0 : calculateTalentCostForTalent(talent);
-                const tier = getTalentTier(talent);
-                const matches = getMatchingAptitudesForTalent(talent);
+            const talentsContainer = document.getElementById('talentsSelection');
+            if (!talentsContainer) {
+                console.error('talentsSelection container not found!');
+                return;
+            }
+            
+            // Ensure allTalents is defined
+            if (!allTalents || allTalents.length === 0) {
+                console.error('allTalents array is empty or undefined!');
+                talentsContainer.innerHTML = '<p style="color: #ff6b6b;">Error: Talents list not available.</p>';
+                return;
+            }
+            
+            try {
+                talentsContainer.innerHTML = allTalents.map(talent => {
+                    const isGrantedTalent = grantedTalents.has(talent);
+                    const talentChoice = talentChoiceMap[talent];
+                    const isChosenFromChoice = talentChoice && talentChoice.chosen === talent;
+                    const isUnchosenOption = talentChoice && !isChosenFromChoice;
+                    const hasTalent = currentCharacter.talents && currentCharacter.talents.includes(talent);
+                    
+                    let cost = 0;
+                    let tier = 1;
+                    let matches = 0;
+                    try {
+                        cost = isGrantedTalent ? 0 : calculateTalentCostForTalent(talent);
+                        tier = getTalentTier(talent);
+                        matches = getMatchingAptitudesForTalent(talent);
+                    } catch (e) {
+                        console.error(`Error calculating cost for talent ${talent}:`, e);
+                        cost = 300; // Default cost
+                    }
                 
                 // Show choice UI for unchosen options
                 let choiceUI = '';
@@ -2922,7 +2944,11 @@
                         </span>
                     </div>
                 `;
-            }).join('');
+                }).join('');
+            } catch (e) {
+                console.error('Error rendering talents:', e);
+                talentsContainer.innerHTML = `<p style="color: #ff6b6b;">Error rendering talents: ${e.message}</p>`;
+            }
             
             updateXPDisplayTalents();
             renderEquipmentSelection();
@@ -2982,96 +3008,69 @@
             });
             
             // Convert starting equipment strings to equipment objects if needed
-            // Store starting equipment separately for management
-            if (currentCharacter.startingEquipment.length === 0 && visibleStartingEquipment.length > 0) {
-                currentCharacter.startingEquipment = visibleStartingEquipment.map(item => {
-                    if (typeof item === 'string') {
-                        return { name: item, type: 'gear', category: 'gear', custom: true, isStarting: true };
-                    }
-                    return { ...item, isStarting: true };
-                });
-            }
+            // Store starting equipment separately for management - always update to match visible items
+            currentCharacter.startingEquipment = visibleStartingEquipment.map(item => {
+                if (typeof item === 'string') {
+                    return { name: item, type: 'gear', category: 'gear', custom: true, isStarting: true };
+                }
+                return { ...item, isStarting: true };
+            });
             
-            // Display starting equipment - ALWAYS show this section
+            // Display starting equipment - ALWAYS show this section using the enhanced system
             const startingList = document.getElementById('startingEquipmentList');
             if (startingList) {
-                if (visibleStartingEquipment.length > 0) {
-                    startingList.innerHTML = `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #4a90e2; display: block; margin-bottom: 8px;">Starting Equipment (from Background & Role):</strong>
-                            <ul style="margin-left: 20px; color: #b0b0b0; list-style: none; padding: 0;">
-                                ${visibleStartingEquipment.map((item, idx) => {
-                                    const itemName = typeof item === 'string' ? item : (item.name || 'Unnamed');
-                                    // Find the actual index in the raw array for removal
-                                    const rawIndex = startingEquipmentRaw.findIndex(rawItem => {
-                                        const rawName = typeof rawItem === 'string' ? rawItem : (rawItem.name || '');
-                                        return rawName === itemName;
-                                    });
-                                    return `
-                                        <li style="margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.03); border-radius: 3px;">
-                                            • ${itemName}
-                                            <button onclick="removeStartingEquipment(${rawIndex})" 
-                                                    style="margin-left: 10px; padding: 2px 8px; font-size: 11px; background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
-                                                Remove
-                                            </button>
-                                        </li>
-                                    `;
-                                }).join('')}
-                            </ul>
-                        </div>
-                    `;
-                } else {
-                    startingList.innerHTML = '<p style="color: #888; font-style: italic;">No starting equipment from background or role.</p>';
-                }
+                // Use the same rendering system as the equipment manager
+                startingList.innerHTML = `
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color: #4a90e2; display: block; margin-bottom: 8px;">Starting Equipment (from Background & Role):</strong>
+                        ${renderEquipmentItems(currentCharacter.startingEquipment, true)}
+                    </div>
+                `;
             }
             
-            // Display additional equipment
+            // Display additional equipment using the enhanced system
             const equipmentList = document.getElementById('equipmentSelectionList');
             if (equipmentList) {
-                equipmentList.innerHTML = currentCharacter.equipment.length > 0 ? `
+                // Filter out starting equipment from the main equipment list
+                const additionalEquipment = (currentCharacter.equipment || []).filter(item => !item.isStarting);
+                equipmentList.innerHTML = additionalEquipment.length > 0 ? `
                     <div style="margin-bottom: 10px;">
-                        ${currentCharacter.equipment.map((item, idx) => {
-                            const itemName = typeof item === 'string' ? item : (item.name || 'Unnamed');
-                            return `
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 5px; background: rgba(255,255,255,0.05); border-radius: 3px;">
-                                    <span>${itemName}</span>
-                                    <button type="button" onclick="removeEquipmentFromCharacter(${idx})" style="padding: 4px 10px; font-size: 12px; background: rgba(255,107,107,0.2); border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">Remove</button>
-                                </div>
-                            `;
-                        }).join('')}
+                        ${renderEquipmentItems(additionalEquipment, false)}
                     </div>
-                ` : '<p style="color: #888; margin-bottom: 10px;">No additional equipment added yet.</p>';
+                ` : '<p style="color: #888; margin-bottom: 10px; font-style: italic;">No additional equipment added yet.</p>';
             }
         }
 
         function removeStartingEquipment(index) {
             if (!confirm('Remove this starting equipment? You can add it back later if needed.')) return;
             
-            const background = backgrounds[currentCharacter.background];
-            const role = roles[currentCharacter.role];
-            const startingEquipmentRaw = [...(background?.startingEquipment || []), ...(role?.startingEquipment || [])];
-            
-            if (index >= 0 && index < startingEquipmentRaw.length) {
-                // Remove from the raw array (we'll regenerate on next render)
-                // Actually, we can't modify the source data, so we'll track removals separately
-                if (!currentCharacter.removedStartingEquipment) {
-                    currentCharacter.removedStartingEquipment = [];
-                }
-                const item = startingEquipmentRaw[index];
-                const itemName = typeof item === 'string' ? item : (item.name || '');
-                if (!currentCharacter.removedStartingEquipment.includes(itemName)) {
-                    currentCharacter.removedStartingEquipment.push(itemName);
-                }
-                renderEquipmentSelection();
+            if (!currentCharacter.startingEquipment || index < 0 || index >= currentCharacter.startingEquipment.length) {
+                return;
             }
+            
+            const item = currentCharacter.startingEquipment[index];
+            const itemName = typeof item === 'string' ? item : (item.name || '');
+            
+            // Track removal
+            if (!currentCharacter.removedStartingEquipment) {
+                currentCharacter.removedStartingEquipment = [];
+            }
+            if (!currentCharacter.removedStartingEquipment.includes(itemName)) {
+                currentCharacter.removedStartingEquipment.push(itemName);
+            }
+            
+            // Remove from starting equipment array
+            currentCharacter.startingEquipment.splice(index, 1);
+            
+            renderEquipmentSelection();
         }
 
         function addEquipmentToCharacter() {
             const input = document.getElementById('newEquipmentInput');
             if (!input) return;
             
-            const equipment = input.value.trim();
-            if (!equipment) {
+            const equipmentName = input.value.trim();
+            if (!equipmentName) {
                 alert('Please enter equipment name.');
                 return;
             }
@@ -3080,20 +3079,49 @@
                 currentCharacter.equipment = [];
             }
             
-            if (currentCharacter.equipment.includes(equipment)) {
+            // Create equipment object (not just a string)
+            const equipmentObj = {
+                name: equipmentName,
+                type: 'gear',
+                category: 'gear',
+                custom: true,
+                isStarting: false
+            };
+            
+            // Check if already exists (by name)
+            const exists = currentCharacter.equipment.some(item => {
+                const itemName = typeof item === 'string' ? item : (item.name || '');
+                return itemName.toLowerCase() === equipmentName.toLowerCase();
+            });
+            
+            if (exists) {
                 alert('This equipment is already in your list.');
                 return;
             }
             
-            currentCharacter.equipment.push(equipment);
+            currentCharacter.equipment.push(equipmentObj);
             input.value = '';
             renderEquipmentSelection();
         }
 
         function removeEquipmentFromCharacter(index) {
-            if (currentCharacter.equipment && currentCharacter.equipment[index]) {
-                currentCharacter.equipment.splice(index, 1);
-                renderEquipmentSelection();
+            if (!currentCharacter.equipment) return;
+            
+            // Filter out starting equipment to get only additional equipment
+            const additionalEquipment = currentCharacter.equipment.filter(item => !item.isStarting);
+            
+            if (index >= 0 && index < additionalEquipment.length) {
+                // Find the actual index in the full equipment array
+                const itemToRemove = additionalEquipment[index];
+                const fullIndex = currentCharacter.equipment.findIndex(item => {
+                    if (typeof item === 'string') return false;
+                    return item.name === itemToRemove.name && !item.isStarting;
+                });
+                
+                if (fullIndex >= 0) {
+                    currentCharacter.equipment.splice(fullIndex, 1);
+                    renderEquipmentSelection();
+                }
             }
         }
 
@@ -3317,40 +3345,92 @@
         function updateXPDisplayTalents() {
             const background = backgrounds[currentCharacter.background];
             const role = roles[currentCharacter.role];
-            const startingTalents = [...new Set([
+            const startingTalentsRaw = [...new Set([
                 ...(background?.startingTalents || []),
                 ...(role?.startingTalents || [])
             ])];
-            const startingSkills = [...new Set([
+            
+            // Resolve "or" choices to get actual granted talents
+            const grantedTalents = new Set();
+            if (currentCharacter.talentChoices) {
+                startingTalentsRaw.forEach(talentEntry => {
+                    if (talentEntry.includes(' or ')) {
+                        const chosen = currentCharacter.talentChoices[talentEntry];
+                        if (chosen) {
+                            grantedTalents.add(chosen);
+                        }
+                    } else {
+                        grantedTalents.add(talentEntry);
+                    }
+                });
+            } else {
+                // Fallback: add all non-"or" talents
+                startingTalentsRaw.forEach(talent => {
+                    if (!talent.includes(' or ')) {
+                        grantedTalents.add(talent);
+                    }
+                });
+            }
+            
+            // Handle starting skills with "or" choices
+            const startingSkillsRaw = [...new Set([
                 ...(background?.startingSkills || []),
                 ...(role?.startingSkills || [])
             ])];
+            const grantedSkills = new Set();
+            if (currentCharacter.skillChoices) {
+                startingSkillsRaw.forEach(skillEntry => {
+                    if (skillEntry.includes(' or ')) {
+                        const chosen = currentCharacter.skillChoices[skillEntry];
+                        if (chosen) {
+                            grantedSkills.add(chosen);
+                        }
+                    } else {
+                        grantedSkills.add(skillEntry);
+                    }
+                });
+            } else {
+                startingSkillsRaw.forEach(skill => {
+                    if (!skill.includes(' or ')) {
+                        grantedSkills.add(skill);
+                    }
+                });
+            }
             
             let totalSpent = 0;
-            // Calculate skill costs (excluding starting skills)
+            // Calculate skill costs (excluding starting/granted skills)
             Object.keys(currentCharacter.skills).forEach(skill => {
-                if (startingSkills.includes(skill)) {
+                if (grantedSkills.has(skill)) {
                     return; // Starting skills are free
                 }
                 
                 const rank = currentCharacter.skills[skill] || 0;
-                totalSpent += calculateTotalSkillCost(skill, rank);
-            });
-            
-            // Calculate talent costs (excluding starting talents)
-            currentCharacter.talents.forEach(talent => {
-                if (!startingTalents.includes(talent)) {
-                    totalSpent += calculateTalentCostForTalent(talent);
+                if (rank > 0) {
+                    totalSpent += calculateTotalSkillCost(skill, rank);
                 }
             });
             
+            // Calculate talent costs (excluding starting/granted talents)
+            if (currentCharacter.talents) {
+                currentCharacter.talents.forEach(talent => {
+                    if (!grantedTalents.has(talent)) {
+                        totalSpent += calculateTalentCostForTalent(talent);
+                    }
+                });
+            }
+            
             currentCharacter.xpRemaining = 1000 - totalSpent;
-            document.getElementById('xpRemainingTalents').textContent = currentCharacter.xpRemaining;
+            const xpDisplay = document.getElementById('xpRemainingTalents');
+            if (xpDisplay) {
+                xpDisplay.textContent = currentCharacter.xpRemaining;
+            }
             
             if (currentCharacter.xpRemaining < 0) {
-                document.getElementById('xpRemainingTalents').parentElement.classList.add('warning');
+                const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
+                if (xpContainer) xpContainer.classList.add('warning');
             } else {
-                document.getElementById('xpRemainingTalents').parentElement.classList.remove('warning');
+                const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
+                if (xpContainer) xpContainer.classList.remove('warning');
             }
         }
 
