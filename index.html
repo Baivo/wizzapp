@@ -1181,22 +1181,26 @@
                 </div>
                 <div class="wizard-step" id="step6">
                     <div class="wizard-step-circle">6</div>
-                    <div class="wizard-step-label">Aptitudes</div>
+                    <div class="wizard-step-label">Wounds & Fate</div>
                 </div>
                 <div class="wizard-step" id="step7">
                     <div class="wizard-step-circle">7</div>
-                    <div class="wizard-step-label">Skills</div>
+                    <div class="wizard-step-label">Aptitudes</div>
                 </div>
                 <div class="wizard-step" id="step8">
                     <div class="wizard-step-circle">8</div>
-                    <div class="wizard-step-label">Talents</div>
+                    <div class="wizard-step-label">Skills</div>
                 </div>
                 <div class="wizard-step" id="step9">
                     <div class="wizard-step-circle">9</div>
-                    <div class="wizard-step-label">Divination</div>
+                    <div class="wizard-step-label">Talents</div>
                 </div>
                 <div class="wizard-step" id="step10">
                     <div class="wizard-step-circle">10</div>
+                    <div class="wizard-step-label">Divination</div>
+                </div>
+                <div class="wizard-step" id="step11">
+                    <div class="wizard-step-circle">11</div>
                     <div class="wizard-step-label">Review</div>
                 </div>
             </div>
@@ -1280,8 +1284,20 @@
                     </div>
                 </div>
 
-                <!-- Step 6: Aptitudes -->
+                <!-- Step 6: Wounds and Fate Points -->
                 <div class="wizard-content hidden" id="wizardStep6">
+                    <div class="form-section">
+                        <h3>Roll Wounds and Fate Points</h3>
+                        <p style="color: #b0b0b0; margin-bottom: 20px;">Your homeworld determines your base wounds and fate threshold. Roll to determine your final values.</p>
+                        
+                        <div id="woundsAndFateRollArea" style="margin: 20px 0;">
+                            <!-- Will be populated by renderWoundsAndFateRolls() -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 7: Aptitudes -->
+                <div class="wizard-content hidden" id="wizardStep7">
                     <div class="form-section">
                         <h3>Select Aptitudes</h3>
                         <p style="color: #b0b0b0; margin-bottom: 20px;">Aptitudes determine the cost of advancing characteristics, skills, and talents. You have <strong>5 aptitudes</strong> to select. Some are already granted by your choices.</p>
@@ -1293,7 +1309,7 @@
                     </div>
                 </div>
 
-                <!-- Step 7: Skills -->
+                <!-- Step 8: Skills -->
                 <div class="wizard-content hidden" id="wizardStep7">
                     <div class="form-section">
                         <h3>Select Skills</h3>
@@ -1310,8 +1326,8 @@
                     </div>
                 </div>
 
-                <!-- Step 8: Talents -->
-                <div class="wizard-content hidden" id="wizardStep8">
+                <!-- Step 9: Talents -->
+                <div class="wizard-content hidden" id="wizardStep9">
                     <div class="form-section">
                         <h3>Select Talents</h3>
                         <p style="color: #b0b0b0; margin-bottom: 20px;">Spend your remaining XP on talents. Talents you already have from your background and role are shown below. You start with 1,000 XP total.</p>
@@ -1349,8 +1365,8 @@
                     </div>
                 </div>
 
-                <!-- Step 9: Divination -->
-                <div class="wizard-content hidden" id="wizardStep9">
+                <!-- Step 10: Divination -->
+                <div class="wizard-content hidden" id="wizardStep10">
                     <div class="form-section">
                         <h3>Divination Roll</h3>
                         <p style="color: #b0b0b0; margin-bottom: 20px;">Each character's strange and twisted destiny has played a large part in his life. Roll 1d100 to determine your character's divination prophecy.</p>
@@ -1363,8 +1379,8 @@
                     </div>
                 </div>
 
-                <!-- Step 10: Review -->
-                <div class="wizard-content hidden" id="wizardStep10">
+                <!-- Step 11: Review -->
+                <div class="wizard-content hidden" id="wizardStep11">
                     <div class="form-section">
                         <h3>Character Summary</h3>
                         <div id="characterSummary"></div>
@@ -3332,7 +3348,7 @@
         }
 
         function nextStep() {
-            if (currentStep < 10) {
+            if (currentStep < 11) {
                 // Validate current step
                 if (!validateStep(currentStep)) {
                     return;
@@ -3348,35 +3364,37 @@
                 document.getElementById(`wizardStep${currentStep}`).classList.remove('hidden');
                 document.getElementById(`step${currentStep}`).classList.add('active');
 
+                // Scroll to top of modal content
+                const modalContent = document.querySelector('#characterModal .modal-content');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
+
                 // Load step-specific content
                 if (currentStep === 6) {
-                    renderAptitudeSelection();
+                    renderWoundsAndFateRolls();
                 } else if (currentStep === 7) {
-                    renderSkillsSelection();
+                    renderAptitudeSelection();
                 } else if (currentStep === 8) {
+                    renderSkillsSelection();
+                } else if (currentStep === 9) {
                     // Ensure XP is calculated from skills before showing talents page
                     updateXPDisplay();
                     renderTalentsSelection();
-                } else if (currentStep === 9) {
-                    renderDivination();
                 } else if (currentStep === 10) {
+                    renderDivination();
+                } else if (currentStep === 11) {
                     generateSummary();
                 }
 
                 // Update navigation buttons
                 document.getElementById('prevButton').style.display = 'block';
-                if (currentStep === 10) {
+                if (currentStep === 11) {
                     document.getElementById('nextButton').style.display = 'none';
                     document.getElementById('finishButton').style.display = 'block';
                 } else {
                     document.getElementById('nextButton').style.display = 'block';
                     document.getElementById('finishButton').style.display = 'none';
-                }
-
-                // Scroll to top of modal content
-                const modalContent = document.querySelector('#characterModal .modal-content');
-                if (modalContent) {
-                    modalContent.scrollTop = 0;
                 }
             }
         }
@@ -3479,6 +3497,31 @@
                     }
                     return true;
                 case 6:
+                    // Validate that wounds and fate have been rolled
+                    if (!currentCharacter.homeworld) {
+                        alert('Please select a homeworld first.');
+                        return false;
+                    }
+                    const homeworld = homeworlds[currentCharacter.homeworld];
+                    if (!homeworld) {
+                        return false;
+                    }
+                    // Check if wounds roll exists
+                    const woundsRollKey = `wounds_${currentCharacter.homeworld}`;
+                    if (!currentCharacter.diceRolls[woundsRollKey]) {
+                        alert('Please roll for wounds before proceeding.');
+                        return false;
+                    }
+                    // Check if Emperor's Blessing roll exists (if applicable)
+                    if (homeworld.emperorBlessing !== undefined && homeworld.emperorBlessing !== null) {
+                        const blessingRollKey = `emperorBlessing_${currentCharacter.homeworld}`;
+                        if (!currentCharacter.diceRolls[blessingRollKey]) {
+                            alert('Please roll for Emperor\'s Blessing before proceeding.');
+                            return false;
+                        }
+                    }
+                    return true;
+                case 7:
                     // Aptitudes are auto-granted from homeworld, background, and role
                     // No need to validate a specific count - just ensure they exist
                     if (!currentCharacter.selectedAptitudes || currentCharacter.selectedAptitudes.length === 0) {
@@ -3486,16 +3529,19 @@
                         return false;
                     }
                     return true;
-                case 7:
                 case 8:
+                case 9:
                     // Skills and talents are optional, just need to check XP isn't negative
                     if (currentCharacter.xpRemaining < 0) {
                         alert('You have spent more XP than you have available!');
                         return false;
                     }
                     return true;
-                case 9:
+                case 10:
                     // Divination is optional but recommended
+                    return true;
+                case 11:
+                    // Review step - no validation needed
                     return true;
                 default:
                     return true;
@@ -5518,6 +5564,146 @@
             }
         }
 
+        // Render wounds and fate rolls step
+        function renderWoundsAndFateRolls() {
+            try {
+                if (!currentCharacter.homeworld) {
+                    const rollArea = document.getElementById('woundsAndFateRollArea');
+                    if (rollArea) {
+                        rollArea.innerHTML = '<p style="color: #ff6b6b;">Please select a homeworld first.</p>';
+                    }
+                    return;
+                }
+                
+                const homeworld = homeworlds[currentCharacter.homeworld];
+                if (!homeworld) {
+                    return;
+                }
+                
+                const rollArea = document.getElementById('woundsAndFateRollArea');
+                if (!rollArea) return;
+                
+                // Parse wounds formula
+                const woundsFormula = homeworld.wounds || '10';
+                const woundsMatch = woundsFormula.match(/(\d+)\+1d(\d+)/);
+                const woundsBase = woundsMatch ? parseInt(woundsMatch[1]) : 10;
+                const woundsDieSize = woundsMatch ? parseInt(woundsMatch[2]) : 0;
+                
+                // Get existing rolls or initialize
+                const woundsRollKey = `wounds_${currentCharacter.homeworld}`;
+                const woundsRoll = currentCharacter.diceRolls[woundsRollKey] || null;
+                const woundsTotal = woundsRoll ? woundsBase + woundsRoll : null;
+                
+                // Emperor's Blessing
+                const fateThreshold = homeworld.fateThreshold || 2;
+                const emperorBlessing = homeworld.emperorBlessing;
+                const blessingRollKey = `emperorBlessing_${currentCharacter.homeworld}`;
+                const blessingRoll = currentCharacter.diceRolls[blessingRollKey] || null;
+                const finalFate = blessingRoll !== null ? 
+                    (blessingRoll >= emperorBlessing ? fateThreshold + 1 : fateThreshold) : 
+                    null;
+                
+                let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">';
+                
+                // Wounds section
+                html += '<div style="padding: 20px; background: rgba(74, 144, 226, 0.1); border-radius: 5px; border: 2px solid #4a90e2;">';
+                html += '<h4 style="color: #4a90e2; margin-bottom: 15px;">Wounds</h4>';
+                html += `<p style="color: #b0b0b0; margin-bottom: 10px;">Your homeworld grants you <strong>${woundsFormula}</strong> wounds.</p>`;
+                
+                if (woundsRoll === null) {
+                    html += `<button type="button" onclick="rollWounds()" style="width: 100%; padding: 15px; font-size: 16px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer; margin-top: 10px;">
+                        🎲 Roll 1d${woundsDieSize} for Wounds
+                    </button>`;
+                } else {
+                    html += `<div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 3px;">`;
+                    html += `<div style="font-size: 1.2em; margin-bottom: 10px;"><strong>Roll Result:</strong> ${woundsRoll}</div>`;
+                    html += `<div style="font-size: 1.5em; color: #4a90e2;"><strong>Total Wounds:</strong> ${woundsBase} + ${woundsRoll} = <strong>${woundsTotal}</strong></div>`;
+                    html += `<button type="button" onclick="rollWounds()" style="width: 100%; padding: 10px; margin-top: 10px; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
+                        🔄 Re-roll
+                    </button>`;
+                    html += '</div>';
+                }
+                html += '</div>';
+                
+                // Fate Points section
+                html += '<div style="padding: 20px; background: rgba(74, 144, 226, 0.1); border-radius: 5px; border: 2px solid #4a90e2;">';
+                html += '<h4 style="color: #4a90e2; margin-bottom: 15px;">Fate Points (Emperor\'s Blessing)</h4>';
+                html += `<p style="color: #b0b0b0; margin-bottom: 10px;">Your homeworld grants you a Fate threshold of <strong>${fateThreshold}</strong>.`;
+                
+                if (emperorBlessing !== undefined && emperorBlessing !== null) {
+                    html += `<br>Roll 1d10. If you roll <strong>${emperorBlessing} or higher</strong>, you gain an additional Fate point!</p>`;
+                    
+                    if (blessingRoll === null) {
+                        html += `<button type="button" onclick="rollEmperorsBlessing()" style="width: 100%; padding: 15px; font-size: 16px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer; margin-top: 10px;">
+                            🎲 Roll 1d10 for Emperor's Blessing
+                        </button>`;
+                    } else {
+                        html += `<div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 3px;">`;
+                        html += `<div style="font-size: 1.2em; margin-bottom: 10px;"><strong>Roll Result:</strong> ${blessingRoll}</div>`;
+                        if (blessingRoll >= emperorBlessing) {
+                            html += `<div style="font-size: 1.5em; color: #4a90e2; margin-bottom: 10px;"><strong>Emperor's Blessing Granted!</strong></div>`;
+                            html += `<div style="font-size: 1.3em;"><strong>Final Fate Threshold:</strong> ${fateThreshold} + 1 = <strong>${finalFate}</strong></div>`;
+                        } else {
+                            html += `<div style="font-size: 1.1em; color: #888; margin-bottom: 10px;">Roll was less than ${emperorBlessing}. No bonus.</div>`;
+                            html += `<div style="font-size: 1.3em;"><strong>Final Fate Threshold:</strong> <strong>${fateThreshold}</strong></div>`;
+                        }
+                        html += `<button type="button" onclick="rollEmperorsBlessing()" style="width: 100%; padding: 10px; margin-top: 10px; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
+                            🔄 Re-roll
+                        </button>`;
+                        html += '</div>';
+                    }
+                } else {
+                    html += '</p>';
+                    html += `<div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 3px;">`;
+                    html += `<div style="font-size: 1.3em; color: #4a90e2;"><strong>Final Fate Threshold:</strong> <strong>${fateThreshold}</strong></div>`;
+                    html += `<p style="color: #888; margin-top: 10px; font-size: 0.9em;">Your homeworld does not have an Emperor's Blessing roll.</p>`;
+                    html += '</div>';
+                }
+                html += '</div>';
+                
+                html += '</div>';
+                
+                rollArea.innerHTML = html;
+            } catch (error) {
+                console.error('Error rendering wounds and fate rolls:', error);
+            }
+        }
+
+        function rollWounds() {
+            try {
+                if (!currentCharacter.homeworld) return;
+                
+                const homeworld = homeworlds[currentCharacter.homeworld];
+                if (!homeworld || !homeworld.wounds) return;
+                
+                const woundsFormula = homeworld.wounds;
+                const match = woundsFormula.match(/(\d+)\+1d(\d+)/);
+                if (match) {
+                    const dieSize = parseInt(match[2]);
+                    const rollKey = `wounds_${currentCharacter.homeworld}`;
+                    currentCharacter.diceRolls[rollKey] = Math.floor(Math.random() * dieSize) + 1;
+                    renderWoundsAndFateRolls();
+                }
+            } catch (error) {
+                console.error('Error rolling wounds:', error);
+            }
+        }
+
+        function rollEmperorsBlessing() {
+            try {
+                if (!currentCharacter.homeworld) return;
+                
+                const homeworld = homeworlds[currentCharacter.homeworld];
+                if (!homeworld || homeworld.emperorBlessing === undefined || homeworld.emperorBlessing === null) return;
+                
+                const rollKey = `emperorBlessing_${currentCharacter.homeworld}`;
+                currentCharacter.diceRolls[rollKey] = Math.floor(Math.random() * 10) + 1;
+                renderWoundsAndFateRolls();
+            } catch (error) {
+                console.error('Error rolling Emperor\'s Blessing:', error);
+            }
+        }
+
         // Helper function to calculate wounds from homeworld formula
         function calculateWounds(homeworldKey) {
             const homeworld = homeworlds[homeworldKey];
@@ -5682,7 +5868,7 @@
         function saveCharacter(e) {
             e.preventDefault();
 
-            if (!validateStep(10)) return;
+            if (!validateStep(11)) return;
 
             const homeworld = homeworlds[currentCharacter.homeworld];
             const background = backgrounds[currentCharacter.background];
