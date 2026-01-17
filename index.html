@@ -2917,137 +2917,260 @@
         }
 
         function renderHomeworldOptions() {
-            const container = document.getElementById('homeworldOptions');
-            container.innerHTML = Object.entries(homeworlds).map(([key, data]) => `
-                <div class="option-card" onclick="selectHomeworld('${key}')" id="homeworld_${key}">
-                    <h4>${data.name}</h4>
-                    <p>${data.description}</p>
-                    <div class="bonuses">
-                        <strong>Characteristic Bonuses:</strong> ${Object.entries(data.bonuses).map(([stat, val]) => 
-                            `${stat.toUpperCase()} ${val > 0 ? '+' : ''}${val}`
-                        ).join(', ')}
-                    </div>
-                </div>
-            `).join('');
+            try {
+                const container = document.getElementById('homeworldOptions');
+                if (!container) {
+                    console.error('homeworldOptions container not found');
+                    return;
+                }
+                container.innerHTML = Object.entries(homeworlds).map(([key, data]) => {
+                    if (!data || !data.name || !data.description || !data.bonuses) {
+                        console.warn(`Invalid homeworld data for key: ${key}`);
+                        return '';
+                    }
+                    // Escape quotes in onclick
+                    const escapedKey = key.replace(/'/g, "\\'");
+                    return `
+                        <div class="option-card" onclick="selectHomeworld('${escapedKey}')" id="homeworld_${key.replace(/\s+/g, '_')}">
+                            <h4>${data.name}</h4>
+                            <p>${data.description}</p>
+                            <div class="bonuses">
+                                <strong>Characteristic Bonuses:</strong> ${Object.entries(data.bonuses).map(([stat, val]) => 
+                                    `${stat.toUpperCase()} ${val > 0 ? '+' : ''}${val}`
+                                ).join(', ')}
+                            </div>
+                        </div>
+                    `;
+                }).filter(html => html).join('');
+            } catch (error) {
+                console.error('Error rendering homeworld options:', error);
+            }
         }
 
         function renderBackgroundOptions() {
-            const container = document.getElementById('backgroundOptions');
-            container.innerHTML = Object.entries(backgrounds).map(([key, data]) => `
-                <div class="option-card" onclick="selectBackground('${key}')" id="background_${key}">
-                    <h4>${data.name}</h4>
-                    <p>${data.description}</p>
-                    <div class="bonuses">
-                        <strong>Characteristic Bonuses:</strong> ${Object.entries(data.bonuses).map(([stat, val]) => 
-                            `${stat.toUpperCase()} ${val > 0 ? '+' : ''}${val}`
-                        ).join(', ')}<br>
-                        <strong>Starting Skills:</strong> ${data.startingSkills.join(', ')}<br>
-                        <strong>Starting Talents:</strong> ${data.startingTalents.join(', ')}
-                    </div>
-                </div>
-            `).join('');
+            try {
+                const container = document.getElementById('backgroundOptions');
+                if (!container) {
+                    console.error('backgroundOptions container not found');
+                    return;
+                }
+                container.innerHTML = Object.entries(backgrounds).map(([key, data]) => {
+                    if (!data || !data.name || !data.description || !data.bonuses) {
+                        console.warn(`Invalid background data for key: ${key}`);
+                        return '';
+                    }
+                    // Escape quotes in onclick
+                    const escapedKey = key.replace(/'/g, "\\'");
+                    const startingSkills = Array.isArray(data.startingSkills) ? data.startingSkills.join(', ') : '';
+                    const startingTalents = Array.isArray(data.startingTalents) ? data.startingTalents.join(', ') : '';
+                    return `
+                        <div class="option-card" onclick="selectBackground('${escapedKey}')" id="background_${key.replace(/\s+/g, '_')}">
+                            <h4>${data.name}</h4>
+                            <p>${data.description}</p>
+                            <div class="bonuses">
+                                <strong>Characteristic Bonuses:</strong> ${Object.entries(data.bonuses).map(([stat, val]) => 
+                                    `${stat.toUpperCase()} ${val > 0 ? '+' : ''}${val}`
+                                ).join(', ')}<br>
+                                <strong>Starting Skills:</strong> ${startingSkills}<br>
+                                <strong>Starting Talents:</strong> ${startingTalents}
+                            </div>
+                        </div>
+                    `;
+                }).filter(html => html).join('');
+            } catch (error) {
+                console.error('Error rendering background options:', error);
+            }
         }
 
         function renderRoleOptions() {
-            const container = document.getElementById('roleOptions');
-            container.innerHTML = Object.entries(roles).map(([key, data]) => `
-                <div class="option-card" onclick="selectRole('${key}')" id="role_${key}">
-                    <h4>${data.name}</h4>
-                    <p>${data.description}</p>
-                    <div class="bonuses">
-                        <strong>Characteristic Bonuses:</strong> ${Object.entries(data.bonuses).map(([stat, val]) => 
-                            `${stat.toUpperCase()} ${val > 0 ? '+' : ''}${val}`
-                        ).join(', ')}<br>
-                        <strong>Starting Skills:</strong> ${data.startingSkills.join(', ')}<br>
-                        <strong>Starting Talents:</strong> ${data.startingTalents.join(', ')}
-                    </div>
-                </div>
-            `).join('');
+            try {
+                const container = document.getElementById('roleOptions');
+                if (!container) {
+                    console.error('roleOptions container not found');
+                    return;
+                }
+                container.innerHTML = Object.entries(roles).map(([key, data]) => {
+                    if (!data || !data.name || !data.description || !data.bonuses) {
+                        console.warn(`Invalid role data for key: ${key}`);
+                        return '';
+                    }
+                    // Escape quotes in onclick
+                    const escapedKey = key.replace(/'/g, "\\'");
+                    const startingSkills = Array.isArray(data.startingSkills) ? data.startingSkills.join(', ') : '';
+                    const startingTalents = Array.isArray(data.startingTalents) ? data.startingTalents.join(', ') : '';
+                    return `
+                        <div class="option-card" onclick="selectRole('${escapedKey}')" id="role_${key.replace(/\s+/g, '_')}">
+                            <h4>${data.name}</h4>
+                            <p>${data.description}</p>
+                            <div class="bonuses">
+                                <strong>Characteristic Bonuses:</strong> ${Object.entries(data.bonuses).map(([stat, val]) => 
+                                    `${stat.toUpperCase()} ${val > 0 ? '+' : ''}${val}`
+                                ).join(', ')}<br>
+                                <strong>Starting Skills:</strong> ${startingSkills}<br>
+                                <strong>Starting Talents:</strong> ${startingTalents}
+                            </div>
+                        </div>
+                    `;
+                }).filter(html => html).join('');
+            } catch (error) {
+                console.error('Error rendering role options:', error);
+            }
         }
 
         function renderCharacteristics() {
-            const container = document.getElementById('characteristicsGrid');
-            container.innerHTML = characteristics.map(stat => {
-                const baseValue = currentCharacter.baseCharacteristics[stat] || 25;
-                const currentValue = currentCharacter.characteristics[stat] || baseValue;
-                return `
-                    <div class="characteristic-item">
-                        <label>${characteristicNames[stat]} (${stat.toUpperCase()})</label>
-                        <input type="number" id="char_${stat}" min="1" max="100" value="${currentValue}" 
-                               onchange="updateCharacteristic('${stat}')" 
-                               ${currentCharacter.generationMethod === 'random' ? 'readonly style="background: rgba(255,255,255,0.2);"' : ''}>
-                        <div class="base-value">Base: ${baseValue}</div>
-                    </div>
-                `;
-            }).join('');
+            try {
+                const container = document.getElementById('characteristicsGrid');
+                if (!container) {
+                    console.error('characteristicsGrid container not found');
+                    return;
+                }
+                if (!currentCharacter.baseCharacteristics) {
+                    currentCharacter.baseCharacteristics = {};
+                }
+                if (!currentCharacter.characteristics) {
+                    currentCharacter.characteristics = {};
+                }
+                container.innerHTML = characteristics.map(stat => {
+                    const baseValue = currentCharacter.baseCharacteristics[stat] || 25;
+                    const currentValue = currentCharacter.characteristics[stat] || baseValue;
+                    const statName = characteristicNames[stat] || stat;
+                    // Escape quotes in onchange
+                    const escapedStat = stat.replace(/'/g, "\\'");
+                    return `
+                        <div class="characteristic-item">
+                            <label>${statName} (${stat.toUpperCase()})</label>
+                            <input type="number" id="char_${stat}" min="1" max="100" value="${currentValue}" 
+                                   onchange="updateCharacteristic('${escapedStat}')" 
+                                   ${currentCharacter.generationMethod === 'random' ? 'readonly style="background: rgba(255,255,255,0.2);"' : ''}>
+                            <div class="base-value">Base: ${baseValue}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error rendering characteristics:', error);
+            }
         }
 
         function selectHomeworld(key) {
-            currentCharacter.homeworld = key;
-            document.querySelectorAll('#homeworldOptions .option-card').forEach(card => card.classList.remove('selected'));
-            document.getElementById(`homeworld_${key}`).classList.add('selected');
-            applyBonuses();
+            try {
+                if (!key || !homeworlds[key]) {
+                    console.error('Invalid homeworld key:', key);
+                    return;
+                }
+                currentCharacter.homeworld = key;
+                document.querySelectorAll('#homeworldOptions .option-card').forEach(card => card.classList.remove('selected'));
+                const element = document.getElementById(`homeworld_${key.replace(/\s+/g, '_')}`);
+                if (element) {
+                    element.classList.add('selected');
+                }
+                applyBonuses();
+            } catch (error) {
+                console.error('Error selecting homeworld:', error);
+            }
         }
 
         function selectBackground(key) {
-            currentCharacter.background = key;
-            document.querySelectorAll('#backgroundOptions .option-card').forEach(card => card.classList.remove('selected'));
-            document.getElementById(`background_${key}`).classList.add('selected');
-            applyBonuses();
+            try {
+                if (!key || !backgrounds[key]) {
+                    console.error('Invalid background key:', key);
+                    return;
+                }
+                currentCharacter.background = key;
+                document.querySelectorAll('#backgroundOptions .option-card').forEach(card => card.classList.remove('selected'));
+                const element = document.getElementById(`background_${key.replace(/\s+/g, '_')}`);
+                if (element) {
+                    element.classList.add('selected');
+                }
+                applyBonuses();
+            } catch (error) {
+                console.error('Error selecting background:', error);
+            }
         }
 
         function selectRole(key) {
-            currentCharacter.role = key;
-            document.querySelectorAll('#roleOptions .option-card').forEach(card => card.classList.remove('selected'));
-            document.getElementById(`role_${key}`).classList.add('selected');
-            applyBonuses();
+            try {
+                if (!key || !roles[key]) {
+                    console.error('Invalid role key:', key);
+                    return;
+                }
+                currentCharacter.role = key;
+                document.querySelectorAll('#roleOptions .option-card').forEach(card => card.classList.remove('selected'));
+                const element = document.getElementById(`role_${key.replace(/\s+/g, '_')}`);
+                if (element) {
+                    element.classList.add('selected');
+                }
+                applyBonuses();
+            } catch (error) {
+                console.error('Error selecting role:', error);
+            }
         }
 
         function applyBonuses() {
-            // Reset to base values
-            characteristics.forEach(stat => {
-                currentCharacter.baseCharacteristics[stat] = 25;
-                currentCharacter.characteristics[stat] = 25;
-            });
-
-            // Apply homeworld bonuses
-            if (currentCharacter.homeworld && homeworlds[currentCharacter.homeworld]) {
-                const bonuses = homeworlds[currentCharacter.homeworld].bonuses;
-                Object.keys(bonuses).forEach(stat => {
-                    currentCharacter.baseCharacteristics[stat] += bonuses[stat];
-                    currentCharacter.characteristics[stat] += bonuses[stat];
-                });
-            }
-
-            // Apply background bonuses
-            if (currentCharacter.background && backgrounds[currentCharacter.background]) {
-                const bonuses = backgrounds[currentCharacter.background].bonuses;
-                Object.keys(bonuses).forEach(stat => {
-                    currentCharacter.baseCharacteristics[stat] += bonuses[stat];
-                    currentCharacter.characteristics[stat] += bonuses[stat];
-                });
-            }
-
-            // Apply role bonuses
-            if (currentCharacter.role && roles[currentCharacter.role]) {
-                const bonuses = roles[currentCharacter.role].bonuses;
-                Object.keys(bonuses).forEach(stat => {
-                    currentCharacter.baseCharacteristics[stat] += bonuses[stat];
-                    currentCharacter.characteristics[stat] += bonuses[stat];
-                });
-            }
-
-            // If using point allocation, reset points
-            if (currentCharacter.generationMethod === 'points') {
-                currentCharacter.pointsRemaining = 60;
+            try {
+                // Initialize if needed
+                if (!currentCharacter.baseCharacteristics) {
+                    currentCharacter.baseCharacteristics = {};
+                }
+                if (!currentCharacter.characteristics) {
+                    currentCharacter.characteristics = {};
+                }
+                
+                // Reset to base values
                 characteristics.forEach(stat => {
-                    const base = currentCharacter.baseCharacteristics[stat];
-                    currentCharacter.characteristics[stat] = base;
+                    currentCharacter.baseCharacteristics[stat] = 25;
+                    currentCharacter.characteristics[stat] = 25;
                 });
-            }
 
-            renderCharacteristics();
-            updatePointsDisplay();
+                // Apply homeworld bonuses
+                if (currentCharacter.homeworld && homeworlds[currentCharacter.homeworld]) {
+                    const homeworld = homeworlds[currentCharacter.homeworld];
+                    if (homeworld.bonuses) {
+                        Object.keys(homeworld.bonuses).forEach(stat => {
+                            const bonus = homeworld.bonuses[stat] || 0;
+                            currentCharacter.baseCharacteristics[stat] = (currentCharacter.baseCharacteristics[stat] || 25) + bonus;
+                            currentCharacter.characteristics[stat] = (currentCharacter.characteristics[stat] || 25) + bonus;
+                        });
+                    }
+                }
+
+                // Apply background bonuses
+                if (currentCharacter.background && backgrounds[currentCharacter.background]) {
+                    const background = backgrounds[currentCharacter.background];
+                    if (background.bonuses) {
+                        Object.keys(background.bonuses).forEach(stat => {
+                            const bonus = background.bonuses[stat] || 0;
+                            currentCharacter.baseCharacteristics[stat] = (currentCharacter.baseCharacteristics[stat] || 25) + bonus;
+                            currentCharacter.characteristics[stat] = (currentCharacter.characteristics[stat] || 25) + bonus;
+                        });
+                    }
+                }
+
+                // Apply role bonuses
+                if (currentCharacter.role && roles[currentCharacter.role]) {
+                    const role = roles[currentCharacter.role];
+                    if (role.bonuses) {
+                        Object.keys(role.bonuses).forEach(stat => {
+                            const bonus = role.bonuses[stat] || 0;
+                            currentCharacter.baseCharacteristics[stat] = (currentCharacter.baseCharacteristics[stat] || 25) + bonus;
+                            currentCharacter.characteristics[stat] = (currentCharacter.characteristics[stat] || 25) + bonus;
+                        });
+                    }
+                }
+
+                // If using point allocation, reset points
+                if (currentCharacter.generationMethod === 'points') {
+                    currentCharacter.pointsRemaining = 60;
+                    characteristics.forEach(stat => {
+                        const base = currentCharacter.baseCharacteristics[stat] || 25;
+                        currentCharacter.characteristics[stat] = base;
+                    });
+                }
+
+                renderCharacteristics();
+                updatePointsDisplay();
+            } catch (error) {
+                console.error('Error applying bonuses:', error);
+            }
         }
 
         function selectGenerationMethod(method, element) {
@@ -3070,77 +3193,141 @@
         }
 
         function rollAllCharacteristics() {
-            const resultsDiv = document.getElementById('diceResults');
-            resultsDiv.innerHTML = '<p style="color: #4a90e2; font-weight: bold;">Rolling characteristics...</p>';
-            
-            setTimeout(() => {
-                let resultsHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">';
-                currentCharacter.diceRolls = {};
+            try {
+                const resultsDiv = document.getElementById('diceResults');
+                if (!resultsDiv) {
+                    console.error('diceResults container not found');
+                    return;
+                }
                 
-                characteristics.forEach(stat => {
-                    const roll1 = Math.floor(Math.random() * 10) + 1;
-                    const roll2 = Math.floor(Math.random() * 10) + 1;
-                    const rolled = roll1 + roll2 + 20;
-                    currentCharacter.diceRolls[stat] = { roll1, roll2, total: rolled };
-                    currentCharacter.characteristics[stat] = rolled;
-                    
-                    resultsHTML += `
-                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
-                            <strong style="color: #4a90e2;">${characteristicNames[stat]}:</strong><br>
-                            <span style="color: #b0b0b0;">${roll1} + ${roll2} + 20 = <span style="color: #ff6b6b; font-weight: bold;">${rolled}</span></span>
-                        </div>
-                    `;
-                });
+                resultsDiv.innerHTML = '<p style="color: #4a90e2; font-weight: bold;">Rolling characteristics...</p>';
                 
-                resultsHTML += '</div>';
-                resultsDiv.innerHTML = resultsHTML;
-                applyBonuses();
-                renderCharacteristics();
-            }, 500);
+                if (!currentCharacter.diceRolls) {
+                    currentCharacter.diceRolls = {};
+                }
+                if (!currentCharacter.characteristics) {
+                    currentCharacter.characteristics = {};
+                }
+                
+                setTimeout(() => {
+                    try {
+                        let resultsHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">';
+                        currentCharacter.diceRolls = {};
+                        
+                        characteristics.forEach(stat => {
+                            const roll1 = Math.floor(Math.random() * 10) + 1;
+                            const roll2 = Math.floor(Math.random() * 10) + 1;
+                            const rolled = roll1 + roll2 + 20;
+                            currentCharacter.diceRolls[stat] = { roll1, roll2, total: rolled };
+                            currentCharacter.characteristics[stat] = rolled;
+                            
+                            resultsHTML += `
+                                <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
+                                    <strong style="color: #4a90e2;">${characteristicNames[stat] || stat}:</strong><br>
+                                    <span style="color: #b0b0b0;">${roll1} + ${roll2} + 20 = <span style="color: #ff6b6b; font-weight: bold;">${rolled}</span></span>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsHTML += '</div>';
+                        resultsDiv.innerHTML = resultsHTML;
+                        applyBonuses();
+                        renderCharacteristics();
+                    } catch (error) {
+                        console.error('Error in rollAllCharacteristics setTimeout:', error);
+                        if (resultsDiv) {
+                            resultsDiv.innerHTML = '<p style="color: #ff6b6b;">Error rolling characteristics. Please try again.</p>';
+                        }
+                    }
+                }, 500);
+            } catch (error) {
+                console.error('Error rolling characteristics:', error);
+                const resultsDiv = document.getElementById('diceResults');
+                if (resultsDiv) {
+                    resultsDiv.innerHTML = '<p style="color: #ff6b6b;">Error rolling characteristics. Please try again.</p>';
+                }
+            }
         }
 
         function updateCharacteristic(stat) {
-            if (currentCharacter.generationMethod === 'random') return;
+            try {
+                if (!stat) {
+                    console.error('Invalid characteristic parameter');
+                    return;
+                }
+                
+                if (currentCharacter.generationMethod === 'random') return;
 
-            const input = document.getElementById(`char_${stat}`);
-            const newValue = parseInt(input.value) || currentCharacter.baseCharacteristics[stat];
-            const baseValue = currentCharacter.baseCharacteristics[stat];
-            const oldValue = currentCharacter.characteristics[stat] || baseValue;
-            const difference = newValue - oldValue;
+                if (!currentCharacter.baseCharacteristics) {
+                    currentCharacter.baseCharacteristics = {};
+                }
+                if (!currentCharacter.characteristics) {
+                    currentCharacter.characteristics = {};
+                }
 
-            if (newValue < baseValue) {
-                input.value = baseValue;
-                currentCharacter.characteristics[stat] = baseValue;
-                return;
-            }
+                const input = document.getElementById(`char_${stat}`);
+                if (!input) {
+                    console.error('Characteristic input not found:', stat);
+                    return;
+                }
+                
+                const newValue = parseInt(input.value) || currentCharacter.baseCharacteristics[stat] || 25;
+                const baseValue = currentCharacter.baseCharacteristics[stat] || 25;
+                const oldValue = currentCharacter.characteristics[stat] || baseValue;
+                const difference = newValue - oldValue;
 
-            if (newValue > 40) {
-                input.value = 40;
-                currentCharacter.characteristics[stat] = 40;
+                if (newValue < baseValue) {
+                    input.value = baseValue;
+                    currentCharacter.characteristics[stat] = baseValue;
+                    return;
+                }
+
+                if (newValue > 40) {
+                    input.value = 40;
+                    currentCharacter.characteristics[stat] = 40;
+                    updatePointsDisplay();
+                    return;
+                }
+
+                if (currentCharacter.pointsRemaining - difference < 0) {
+                    input.value = oldValue;
+                    alert('Not enough points remaining!');
+                    return;
+                }
+
+                currentCharacter.characteristics[stat] = newValue;
+                currentCharacter.pointsRemaining -= difference;
                 updatePointsDisplay();
-                return;
+            } catch (error) {
+                console.error('Error updating characteristic:', error);
             }
-
-            if (currentCharacter.pointsRemaining - difference < 0) {
-                input.value = oldValue;
-                alert('Not enough points remaining!');
-                return;
-            }
-
-            currentCharacter.characteristics[stat] = newValue;
-            currentCharacter.pointsRemaining -= difference;
-            updatePointsDisplay();
         }
 
         function updatePointsDisplay() {
-            const display = document.getElementById('pointsRemaining');
-            const value = document.getElementById('pointsRemainingValue');
-            value.textContent = currentCharacter.pointsRemaining;
-            
-            if (currentCharacter.pointsRemaining < 0) {
-                display.classList.add('warning');
-            } else {
-                display.classList.remove('warning');
+            try {
+                const display = document.getElementById('pointsRemaining');
+                const value = document.getElementById('pointsRemainingValue');
+                
+                if (!value) {
+                    console.warn('pointsRemainingValue element not found');
+                    return;
+                }
+                
+                if (currentCharacter.pointsRemaining === undefined) {
+                    currentCharacter.pointsRemaining = 60;
+                }
+                
+                value.textContent = currentCharacter.pointsRemaining;
+                
+                if (display) {
+                    if (currentCharacter.pointsRemaining < 0) {
+                        display.classList.add('warning');
+                    } else {
+                        display.classList.remove('warning');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating points display:', error);
             }
         }
 
@@ -3316,9 +3503,20 @@
         }
 
         function renderAptitudeSelection() {
-            const homeworld = homeworlds[currentCharacter.homeworld];
-            const background = backgrounds[currentCharacter.background];
-            const role = roles[currentCharacter.role];
+            try {
+                if (!currentCharacter.homeworld || !currentCharacter.background || !currentCharacter.role) {
+                    console.warn('Cannot render aptitudes - missing homeworld, background, or role');
+                    return;
+                }
+                
+                const homeworld = homeworlds[currentCharacter.homeworld];
+                const background = backgrounds[currentCharacter.background];
+                const role = roles[currentCharacter.role];
+                
+                if (!homeworld || !background || !role) {
+                    console.error('Invalid homeworld, background, or role data');
+                    return;
+                }
             
             // Initialize if needed
             if (!currentCharacter.aptitudeChoices) currentCharacter.aptitudeChoices = {};
@@ -3583,18 +3781,26 @@
                 `;
             }
             
-            document.getElementById('autoAptitudes').innerHTML = `
-                ${choicesHTML}
-                ${duplicatesHTML}
-                <p style="color: #b0b0b0; margin-bottom: 10px; margin-top: ${choicesHTML || duplicatesHTML ? '20px' : '0'};">
-                    <strong>Granted Aptitudes (${finalApts.length}):</strong>
-                </p>
-                <ul style="margin-left: 20px; color: #b0b0b0;">
-                    ${finalApts.map(apt => `<li>${apt} <span style="color: #4a90e2;">(granted)</span></li>`).join('')}
-                </ul>
-            `;
-            
-            document.getElementById('aptitudeSelection').innerHTML = `
+                const autoAptitudesEl = document.getElementById('autoAptitudes');
+                if (autoAptitudesEl) {
+                    autoAptitudesEl.innerHTML = `
+                        ${choicesHTML}
+                        ${duplicatesHTML}
+                        <p style="color: #b0b0b0; margin-bottom: 10px; margin-top: ${choicesHTML || duplicatesHTML ? '20px' : '0'};">
+                            <strong>Granted Aptitudes (${finalApts.length}):</strong>
+                        </p>
+                        <ul style="margin-left: 20px; color: #b0b0b0;">
+                            ${finalApts.map(apt => `<li>${apt} <span style="color: #4a90e2;">(granted)</span></li>`).join('')}
+                        </ul>
+                    `;
+                }
+                
+                const aptitudeSelectionEl = document.getElementById('aptitudeSelection');
+                if (!aptitudeSelectionEl) {
+                    console.error('aptitudeSelection container not found');
+                    return;
+                }
+                aptitudeSelectionEl.innerHTML = `
                 <div style="background: rgba(74, 144, 226, 0.1); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
                     <h4 style="color: #4a90e2; margin-bottom: 10px;">What are Aptitudes?</h4>
                     <p style="color: #b0b0b0; font-size: 0.9em; line-height: 1.6;">
@@ -3621,6 +3827,13 @@
                     }).join('')}
                 </div>
             `;
+            } catch (error) {
+                console.error('Error rendering aptitude selection:', error);
+                const aptitudeSelectionEl = document.getElementById('aptitudeSelection');
+                if (aptitudeSelectionEl) {
+                    aptitudeSelectionEl.innerHTML = '<p style="color: #ff6b6b;">Error loading aptitudes. Please try again.</p>';
+                }
+            }
         }
 
         function toggleAptitude(aptitude) {
@@ -3641,9 +3854,20 @@
         }
 
         function renderSkillsSelection() {
-            const homeworld = homeworlds[currentCharacter.homeworld];
-            const background = backgrounds[currentCharacter.background];
-            const role = roles[currentCharacter.role];
+            try {
+                if (!currentCharacter.homeworld || !currentCharacter.background || !currentCharacter.role) {
+                    console.warn('Cannot render skills - missing homeworld, background, or role');
+                    return;
+                }
+                
+                const homeworld = homeworlds[currentCharacter.homeworld];
+                const background = backgrounds[currentCharacter.background];
+                const role = roles[currentCharacter.role];
+                
+                if (!homeworld || !background || !role) {
+                    console.error('Invalid homeworld, background, or role data');
+                    return;
+                }
             
             // Add informational section about skills
             const skillsInfo = document.getElementById('skillsInfo');
@@ -3838,41 +4062,60 @@
             }).join('');
             
             updateXPDisplay();
+            } catch (error) {
+                console.error('Error rendering skills selection:', error);
+                const skillsSelectionEl = document.getElementById('skillsSelection');
+                if (skillsSelectionEl) {
+                    skillsSelectionEl.innerHTML = '<p style="color: #ff6b6b;">Error loading skills. Please try again.</p>';
+                }
+            }
         }
 
         function chooseSkillOption(choiceKey, chosenSkill) {
-            if (!currentCharacter.skillChoices) {
-                currentCharacter.skillChoices = {};
-            }
-            
-            // Get the OLD choice BEFORE updating (important!)
-            const oldChosenSkill = currentCharacter.skillChoices[choiceKey];
-            
-            // Update the choice to the new one
-            currentCharacter.skillChoices[choiceKey] = chosenSkill;
-            
-            // Handle the old chosen skill
-            if (oldChosenSkill) {
-                const oldSkillRank = currentCharacter.skills[oldChosenSkill] || 0;
-                
-                // If it was only at rank 0 (free starting skill), remove it from skills
-                // This prevents XP from being charged for it when switching
-                // If player had advanced it beyond rank 0, keep it (they paid XP for those ranks)
-                if (oldSkillRank === 0) {
-                    delete currentCharacter.skills[oldChosenSkill];
+            try {
+                if (!choiceKey || !chosenSkill) {
+                    console.error('Invalid skill choice parameters:', choiceKey, chosenSkill);
+                    return;
                 }
-                // If rank > 0, keep it - player paid XP for those ranks and should keep them
+                
+                if (!currentCharacter.skillChoices) {
+                    currentCharacter.skillChoices = {};
+                }
+                if (!currentCharacter.skills) {
+                    currentCharacter.skills = {};
+                }
+                
+                // Get the OLD choice BEFORE updating (important!)
+                const oldChosenSkill = currentCharacter.skillChoices[choiceKey];
+                
+                // Update the choice to the new one
+                currentCharacter.skillChoices[choiceKey] = chosenSkill;
+                
+                // Handle the old chosen skill
+                if (oldChosenSkill) {
+                    const oldSkillRank = currentCharacter.skills[oldChosenSkill] || 0;
+                    
+                    // If it was only at rank 0 (free starting skill), remove it from skills
+                    // This prevents XP from being charged for it when switching
+                    // If player had advanced it beyond rank 0, keep it (they paid XP for those ranks)
+                    if (oldSkillRank === 0) {
+                        delete currentCharacter.skills[oldChosenSkill];
+                    }
+                    // If rank > 0, keep it - player paid XP for those ranks and should keep them
+                }
+                
+                // Ensure the new chosen skill is initialized at rank 0 (free)
+                // Only set to 0 if it doesn't already exist or is currently 0
+                if (!currentCharacter.skills[chosenSkill] || currentCharacter.skills[chosenSkill] === 0) {
+                    currentCharacter.skills[chosenSkill] = 0;
+                }
+                // If the new skill already has ranks > 0, keep those ranks (player may have purchased it)
+                
+                // Re-render to show the updated choice and recalculate XP
+                renderSkillsSelection();
+            } catch (error) {
+                console.error('Error choosing skill option:', error);
             }
-            
-            // Ensure the new chosen skill is initialized at rank 0 (free)
-            // Only set to 0 if it doesn't already exist or is currently 0
-            if (!currentCharacter.skills[chosenSkill] || currentCharacter.skills[chosenSkill] === 0) {
-                currentCharacter.skills[chosenSkill] = 0;
-            }
-            // If the new skill already has ranks > 0, keep those ranks (player may have purchased it)
-            
-            // Re-render to show the updated choice and recalculate XP
-            renderSkillsSelection();
         }
 
         function toggleSkill(skill) {
@@ -3922,16 +4165,70 @@
         }
 
         function updateSkillLevel(skill) {
-            const input = document.getElementById(`skillval_${skill.replace(/\s+/g, '_')}`);
-            const level = parseInt(input.value) || 0;
-            currentCharacter.skills[skill] = level;
-            updateXPDisplay();
+            try {
+                if (!skill) {
+                    console.error('Invalid skill parameter');
+                    return;
+                }
+                
+                if (!currentCharacter.skills) {
+                    currentCharacter.skills = {};
+                }
+                
+                const input = document.getElementById(`skillval_${skill.replace(/\s+/g, '_')}`);
+                if (!input) {
+                    console.error('Skill input not found');
+                    return;
+                }
+                
+                const level = parseInt(input.value) || 0;
+                currentCharacter.skills[skill] = level;
+                updateXPDisplay();
+            } catch (error) {
+                console.error('Error updating skill level:', error);
+            }
+        }
+
+        // Helper function to detect if a talent string contains an "or" choice
+        // Returns true if " or " appears outside of parentheses (indicating a choice between talents)
+        // Returns false if " or " only appears inside parentheses (part of a single talent specification)
+        function isTalentChoice(talentString) {
+            if (!talentString.includes(' or ')) {
+                return false;
+            }
+            
+            // Check if " or " appears outside of parentheses
+            let parenDepth = 0;
+            for (let i = 0; i < talentString.length - 3; i++) {
+                if (talentString[i] === '(') {
+                    parenDepth++;
+                } else if (talentString[i] === ')') {
+                    parenDepth--;
+                } else if (parenDepth === 0 && talentString.substring(i, i + 4) === ' or ') {
+                    // Found " or " outside of parentheses - this is a choice
+                    return true;
+                }
+            }
+            
+            // " or " only appears inside parentheses - not a choice
+            return false;
         }
 
         function renderTalentsSelection() {
-            const homeworld = homeworlds[currentCharacter.homeworld];
-            const background = backgrounds[currentCharacter.background];
-            const role = roles[currentCharacter.role];
+            try {
+                if (!currentCharacter.homeworld || !currentCharacter.background || !currentCharacter.role) {
+                    console.warn('Cannot render talents - missing homeworld, background, or role');
+                    return;
+                }
+                
+                const homeworld = homeworlds[currentCharacter.homeworld];
+                const background = backgrounds[currentCharacter.background];
+                const role = roles[currentCharacter.role];
+                
+                if (!homeworld || !background || !role) {
+                    console.error('Invalid homeworld, background, or role data');
+                    return;
+                }
             
             // Add informational section about talents
             const talentsInfo = document.getElementById('talentsInfo');
@@ -3965,8 +4262,33 @@
             const talentChoiceMap = {};
             
             startingTalentsRaw.forEach(talentEntry => {
-                if (talentEntry.includes(' or ')) {
-                    const options = talentEntry.split(' or ').map(s => s.trim());
+                if (isTalentChoice(talentEntry)) {
+                    // This is a choice between talents - split on " or " that's outside parentheses
+                    const options = [];
+                    let currentOption = '';
+                    let parenDepth = 0;
+                    
+                    for (let i = 0; i < talentEntry.length; i++) {
+                        const char = talentEntry[i];
+                        if (char === '(') {
+                            parenDepth++;
+                            currentOption += char;
+                        } else if (char === ')') {
+                            parenDepth--;
+                            currentOption += char;
+                        } else if (parenDepth === 0 && talentEntry.substring(i, i + 4) === ' or ') {
+                            // Found " or " outside parentheses - end current option, start new one
+                            options.push(currentOption.trim());
+                            currentOption = '';
+                            i += 3; // Skip " or "
+                        } else {
+                            currentOption += char;
+                        }
+                    }
+                    if (currentOption.trim()) {
+                        options.push(currentOption.trim());
+                    }
+                    
                     const choiceKey = talentEntry;
                     let chosenTalent = currentCharacter.talentChoices[choiceKey];
                     
@@ -4006,8 +4328,32 @@
             document.getElementById('startingTalentsList').innerHTML = `
                 <ul style="margin-left: 20px; color: #b0b0b0; list-style: none; padding: 0;">
                     ${startingTalentsRaw.map(talent => {
-                        if (talent.includes(' or ')) {
-                            const options = talent.split(' or ').map(s => s.trim());
+                        if (isTalentChoice(talent)) {
+                            // Parse options properly (respecting parentheses)
+                            const options = [];
+                            let currentOption = '';
+                            let parenDepth = 0;
+                            
+                            for (let i = 0; i < talent.length; i++) {
+                                const char = talent[i];
+                                if (char === '(') {
+                                    parenDepth++;
+                                    currentOption += char;
+                                } else if (char === ')') {
+                                    parenDepth--;
+                                    currentOption += char;
+                                } else if (parenDepth === 0 && talent.substring(i, i + 4) === ' or ') {
+                                    options.push(currentOption.trim());
+                                    currentOption = '';
+                                    i += 3;
+                                } else {
+                                    currentOption += char;
+                                }
+                            }
+                            if (currentOption.trim()) {
+                                options.push(currentOption.trim());
+                            }
+                            
                             const choiceKey = talent;
                             const chosen = currentCharacter.talentChoices[choiceKey] || options[0];
                             return `
@@ -4019,8 +4365,11 @@
                                     <div class="choice-buttons-container">
                                         ${options.map(opt => {
                                             const isChosen = opt === chosen;
+                                            // Escape quotes for onclick
+                                            const escapedOpt = opt.replace(/'/g, "\\'");
+                                            const escapedChoiceKey = choiceKey.replace(/'/g, "\\'");
                                             return `
-                                                <button onclick="chooseTalentOption('${choiceKey}', '${opt}')" 
+                                                <button onclick="chooseTalentOption('${escapedChoiceKey}', '${escapedOpt}')" 
                                                         style="flex: 1; padding: 10px 14px; font-size: 0.9em; 
                                                                ${isChosen ? 'background: #4a90e2; color: white; border: 1px solid #4a90e2;' : 'background: rgba(74, 144, 226, 0.2); color: #4a90e2; border: 1px solid #4a90e2;'} 
                                                                border-radius: 3px; cursor: pointer; transition: all 0.2s;">
@@ -4113,6 +4462,13 @@
             
             updateXPDisplayTalents();
             renderEquipmentSelection();
+            } catch (error) {
+                console.error('Error rendering talents selection:', error);
+                const talentsContainer = document.getElementById('talentsSelection');
+                if (talentsContainer) {
+                    talentsContainer.innerHTML = '<p style="color: #ff6b6b;">Error loading talents. Please try again.</p>';
+                }
+            }
         }
 
         function chooseTalentOption(choiceKey, chosenTalent) {
@@ -4145,24 +4501,25 @@
         }
 
         function renderEquipmentSelection() {
-            const background = backgrounds[currentCharacter.background];
-            const role = roles[currentCharacter.role];
-            
-            const startingEquipmentRaw = [...(background?.startingEquipment || []), ...(role?.startingEquipment || [])];
-            
-            // Initialize equipment arrays if needed
-            if (!currentCharacter.equipment) {
-                currentCharacter.equipment = [];
-            }
-            if (!currentCharacter.startingEquipment) {
-                currentCharacter.startingEquipment = [];
-            }
-            if (!currentCharacter.equipmentChoices) {
-                currentCharacter.equipmentChoices = {};
-            }
-            if (!currentCharacter.removedStartingEquipment) {
-                currentCharacter.removedStartingEquipment = [];
-            }
+            try {
+                const background = backgrounds[currentCharacter.background];
+                const role = roles[currentCharacter.role];
+                
+                const startingEquipmentRaw = [...(background?.startingEquipment || []), ...(role?.startingEquipment || [])];
+                
+                // Initialize equipment arrays if needed
+                if (!currentCharacter.equipment) {
+                    currentCharacter.equipment = [];
+                }
+                if (!currentCharacter.startingEquipment) {
+                    currentCharacter.startingEquipment = [];
+                }
+                if (!currentCharacter.equipmentChoices) {
+                    currentCharacter.equipmentChoices = {};
+                }
+                if (!currentCharacter.removedStartingEquipment) {
+                    currentCharacter.removedStartingEquipment = [];
+                }
             
             // Filter out removed starting equipment
             const removedList = currentCharacter.removedStartingEquipment || [];
@@ -4247,13 +4604,30 @@
                     </div>
                 ` : '<p style="color: #888; margin-bottom: 10px; font-style: italic;">No additional equipment added yet.</p>';
             }
+            } catch (error) {
+                console.error('Error rendering equipment selection:', error);
+                // Don't crash - just log the error
+                const startingList = document.getElementById('startingEquipmentList');
+                if (startingList) {
+                    startingList.innerHTML = '<p style="color: #ff6b6b;">Error loading equipment. Please refresh the page.</p>';
+                }
+                const equipmentList = document.getElementById('equipmentSelectionList');
+                if (equipmentList) {
+                    equipmentList.innerHTML = '<p style="color: #ff6b6b;">Error loading equipment.</p>';
+                }
+            }
         }
 
         // Helper function to render equipment item details
         function renderEquipmentItemDetails(item) {
+            if (!item) {
+                return '<div style="color: #888; font-style: italic;">Invalid equipment item</div>';
+            }
+            
+            const itemName = item.name || 'Unnamed Item';
             let html = `<div style="display: flex; justify-content: space-between; align-items: start;">
                 <div style="flex: 1;">
-                    <strong>${item.name}</strong>`;
+                    <strong>${itemName}</strong>`;
             
             if (item.type === 'weapon') {
                 html += `<div style="font-size: 0.85em; color: #b0b0b0; margin-top: 4px;">
@@ -4284,15 +4658,24 @@
 
         // Handle starting equipment choice
         function chooseStartingEquipment(choiceKey, chosenOption) {
-            if (!currentCharacter.equipmentChoices) {
-                currentCharacter.equipmentChoices = {};
+            try {
+                if (!choiceKey || !chosenOption) {
+                    console.error('Invalid equipment choice parameters');
+                    return;
+                }
+                
+                if (!currentCharacter.equipmentChoices) {
+                    currentCharacter.equipmentChoices = {};
+                }
+                
+                // Store the choice
+                currentCharacter.equipmentChoices[choiceKey] = chosenOption;
+                
+                // Re-render equipment selection to update the display
+                renderEquipmentSelection();
+            } catch (error) {
+                console.error('Error choosing starting equipment:', error);
             }
-            
-            // Store the choice
-            currentCharacter.equipmentChoices[choiceKey] = chosenOption;
-            
-            // Re-render equipment selection to update the display
-            renderEquipmentSelection();
         }
 
         function removeStartingEquipment(index) {
@@ -4348,7 +4731,7 @@
                             ${items.map(itemName => {
                                 const item = allEquipment[itemName];
                                 return `
-                                    <button onclick="addEquipmentFromDatabaseCreation('${itemName}')" 
+                                    <button type="button" onclick="addEquipmentFromDatabaseCreation('${itemName.replace(/'/g, "\\'")}')" 
                                             style="padding: 8px; text-align: left; background: rgba(255,255,255,0.1); border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer; color: #e0e0e0;">
                                         <strong>${itemName}</strong>
                                         <div style="font-size: 0.8em; color: #b0b0b0; margin-top: 3px;">
@@ -4362,7 +4745,7 @@
                         </div>
                     </div>
                 `).join('')}
-                <button onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
+                <button type="button" onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
                         style="margin-top: 10px; padding: 8px 15px; background: rgba(255,107,107,0.3); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
                     Cancel
                 </button>
@@ -4370,41 +4753,57 @@
         }
 
         function addEquipmentFromDatabaseCreation(itemName) {
-            const allEquipment = {
-                ...equipmentDatabase.weapons,
-                ...equipmentDatabase.meleeWeapons,
-                ...equipmentDatabase.armor,
-                ...equipmentDatabase.gear
-            };
-            
-            const item = allEquipment[itemName];
-            if (!item) return;
-            
-            if (!currentCharacter.equipment) {
-                currentCharacter.equipment = [];
+            try {
+                if (!itemName) {
+                    console.error('Invalid item name');
+                    return;
+                }
+                
+                const allEquipment = {
+                    ...equipmentDatabase.weapons,
+                    ...equipmentDatabase.meleeWeapons,
+                    ...equipmentDatabase.armor,
+                    ...equipmentDatabase.gear
+                };
+                
+                const item = allEquipment[itemName];
+                if (!item) {
+                    console.error('Equipment item not found:', itemName);
+                    return;
+                }
+                
+                if (!currentCharacter.equipment) {
+                    currentCharacter.equipment = [];
+                }
+                
+                const equipmentItem = {
+                    ...item,
+                    name: itemName,
+                    source: 'rulebook',
+                    isStarting: false
+                };
+                
+                // Check if already exists
+                const exists = currentCharacter.equipment.some(eq => {
+                    const eqName = typeof eq === 'string' ? eq : (eq.name || '');
+                    return eqName.toLowerCase() === itemName.toLowerCase() && !eq.isStarting;
+                });
+                
+                if (exists) {
+                    alert('This equipment is already in your list.');
+                    return;
+                }
+                
+                currentCharacter.equipment.push(equipmentItem);
+                const section = document.getElementById('addEquipmentSectionCreation');
+                if (section) {
+                    section.style.display = 'none';
+                }
+                renderEquipmentSelection();
+            } catch (error) {
+                console.error('Error adding equipment from database:', error);
+                alert('Error adding equipment: ' + (error.message || 'Unknown error') + '. Please try again.');
             }
-            
-            const equipmentItem = {
-                ...item,
-                name: itemName,
-                source: 'rulebook',
-                isStarting: false
-            };
-            
-            // Check if already exists
-            const exists = currentCharacter.equipment.some(eq => {
-                const eqName = typeof eq === 'string' ? eq : (eq.name || '');
-                return eqName.toLowerCase() === itemName.toLowerCase() && !eq.isStarting;
-            });
-            
-            if (exists) {
-                alert('This equipment is already in your list.');
-                return;
-            }
-            
-            currentCharacter.equipment.push(equipmentItem);
-            document.getElementById('addEquipmentSectionCreation').style.display = 'none';
-            renderEquipmentSelection();
         }
 
         function showManualEquipmentFormCreation() {
@@ -4413,14 +4812,14 @@
             
             section.innerHTML = `
                 <h4 style="color: #4a90e2; margin-bottom: 10px;">Create Custom Equipment</h4>
-                <form id="manualEquipmentFormCreation" onsubmit="addManualEquipmentCreation(event)">
+                <div id="manualEquipmentFormCreationDiv">
                     <div style="margin-bottom: 10px;">
                         <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Name *</label>
                         <input type="text" id="eqNameCreation" required style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
                     </div>
                     <div style="margin-bottom: 10px;">
                         <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Type *</label>
-                        <select id="eqTypeCreation" required onchange="updateEquipmentFormCreation()" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                        <select id="eqTypeCreation" onchange="updateEquipmentFormCreation()" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
                             <option value="">Select Type</option>
                             <option value="weapon">Weapon</option>
                             <option value="armor">Armor</option>
@@ -4500,7 +4899,7 @@
                         <textarea id="eqDescriptionCreation" rows="3" placeholder="Equipment description..." style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;"></textarea>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button type="submit" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        <button type="button" onclick="addManualEquipmentCreation(event)" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
                             Add Equipment
                         </button>
                         <button type="button" onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
@@ -4508,7 +4907,7 @@
                             Cancel
                         </button>
                     </div>
-                </form>
+                </div>
             `;
         }
 
@@ -4521,52 +4920,100 @@
         }
 
         function addManualEquipmentCreation(e) {
-            e.preventDefault();
-            
-            if (!currentCharacter.equipment) {
-                currentCharacter.equipment = [];
+            // Always prevent default first to stop form submission
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
             }
             
-            const equipment = {
-                name: document.getElementById('eqNameCreation').value,
-                type: document.getElementById('eqTypeCreation').value,
-                custom: true,
-                source: 'manual',
-                isStarting: false
-            };
-            
-            if (equipment.type === 'weapon') {
-                equipment.category = document.getElementById('eqCategoryCreation').value;
-                equipment.class = document.getElementById('eqClassCreation').value;
-                equipment.range = document.getElementById('eqRangeCreation').value;
-                equipment.damage = document.getElementById('eqDamageCreation').value;
-                equipment.penetration = document.getElementById('eqPenCreation').value;
-                equipment.special = document.getElementById('eqSpecialCreation').value;
-            } else if (equipment.type === 'armor') {
-                equipment.locations = document.getElementById('eqLocationsCreation').value;
-                equipment.ap = parseInt(document.getElementById('eqAPCreation').value) || 0;
-                const maxAg = document.getElementById('eqMaxAgCreation').value;
-                equipment.maxAg = maxAg === '—' || maxAg === '' ? null : parseInt(maxAg);
+            try {
+                if (!currentCharacter.equipment) {
+                    currentCharacter.equipment = [];
+                }
+                
+                const nameInput = document.getElementById('eqNameCreation');
+                const typeInput = document.getElementById('eqTypeCreation');
+                
+                if (!nameInput || !typeInput) {
+                    console.error('Required form inputs not found');
+                    alert('Error: Form inputs not found. Please try again.');
+                    return false;
+                }
+                
+                const equipment = {
+                    name: nameInput.value.trim(),
+                    type: typeInput.value,
+                    custom: true,
+                    source: 'manual',
+                    isStarting: false
+                };
+                
+                if (!equipment.name) {
+                    alert('Please enter an equipment name.');
+                    return false;
+                }
+                
+                if (!equipment.type) {
+                    alert('Please select an equipment type.');
+                    return false;
+                }
+                
+                if (equipment.type === 'weapon') {
+                    const categoryInput = document.getElementById('eqCategoryCreation');
+                    const classInput = document.getElementById('eqClassCreation');
+                    const rangeInput = document.getElementById('eqRangeCreation');
+                    const damageInput = document.getElementById('eqDamageCreation');
+                    const penInput = document.getElementById('eqPenCreation');
+                    const specialInput = document.getElementById('eqSpecialCreation');
+                    
+                    equipment.category = categoryInput ? categoryInput.value : '';
+                    equipment.class = classInput ? classInput.value : '';
+                    equipment.range = rangeInput ? rangeInput.value : '';
+                    equipment.damage = damageInput ? damageInput.value : '';
+                    equipment.penetration = penInput ? penInput.value : '';
+                    equipment.special = specialInput ? specialInput.value : '';
+                } else if (equipment.type === 'armor') {
+                    const locationsInput = document.getElementById('eqLocationsCreation');
+                    const apInput = document.getElementById('eqAPCreation');
+                    const maxAgInput = document.getElementById('eqMaxAgCreation');
+                    
+                    equipment.locations = locationsInput ? locationsInput.value : '';
+                    equipment.ap = apInput ? (parseInt(apInput.value) || 0) : 0;
+                    const maxAg = maxAgInput ? maxAgInput.value : '';
+                    equipment.maxAg = maxAg === '—' || maxAg === '' ? null : parseInt(maxAg);
+                }
+                
+                const weightInput = document.getElementById('eqWeightCreation');
+                const availabilityInput = document.getElementById('eqAvailabilityCreation');
+                const descriptionInput = document.getElementById('eqDescriptionCreation');
+                
+                equipment.weight = weightInput ? weightInput.value : '';
+                equipment.availability = availabilityInput ? availabilityInput.value : '';
+                equipment.description = descriptionInput ? descriptionInput.value : '';
+                
+                // Check if already exists
+                const exists = currentCharacter.equipment.some(eq => {
+                    const eqName = typeof eq === 'string' ? eq : (eq.name || '');
+                    return eqName.toLowerCase() === equipment.name.toLowerCase() && !eq.isStarting;
+                });
+                
+                if (exists) {
+                    alert('This equipment is already in your list.');
+                    return false;
+                }
+                
+                currentCharacter.equipment.push(equipment);
+                const section = document.getElementById('addEquipmentSectionCreation');
+                if (section) {
+                    section.style.display = 'none';
+                }
+                renderEquipmentSelection();
+                return false; // Prevent any form submission
+            } catch (error) {
+                console.error('Error adding equipment:', error);
+                alert('Error adding equipment: ' + (error.message || 'Unknown error') + '. Please try again.');
+                return false; // Prevent form submission on error
             }
-            
-            equipment.weight = document.getElementById('eqWeightCreation').value;
-            equipment.availability = document.getElementById('eqAvailabilityCreation').value;
-            equipment.description = document.getElementById('eqDescriptionCreation').value;
-            
-            // Check if already exists
-            const exists = currentCharacter.equipment.some(eq => {
-                const eqName = typeof eq === 'string' ? eq : (eq.name || '');
-                return eqName.toLowerCase() === equipment.name.toLowerCase() && !eq.isStarting;
-            });
-            
-            if (exists) {
-                alert('This equipment is already in your list.');
-                return;
-            }
-            
-            currentCharacter.equipment.push(equipment);
-            document.getElementById('addEquipmentSectionCreation').style.display = 'none';
-            renderEquipmentSelection();
         }
 
         function showImportEquipmentCodeCreation() {
@@ -4584,10 +5031,10 @@
                               style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px; font-family: monospace;"></textarea>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="importEquipmentCodeCreation()" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                    <button type="button" onclick="importEquipmentCodeCreation()" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
                         Import
                     </button>
-                    <button onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
+                    <button type="button" onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
                             style="padding: 10px; background: rgba(255,107,107,0.3); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
                         Cancel
                     </button>
@@ -4596,39 +5043,53 @@
         }
 
         function importEquipmentCodeCreation() {
-            const code = document.getElementById('equipmentCodeInputCreation').value.trim();
-            if (!code) {
-                alert('Please enter an equipment code.');
-                return;
+            try {
+                const codeInput = document.getElementById('equipmentCodeInputCreation');
+                if (!codeInput) {
+                    console.error('Equipment code input not found');
+                    return;
+                }
+                
+                const code = codeInput.value.trim();
+                if (!code) {
+                    alert('Please enter an equipment code.');
+                    return;
+                }
+                
+                const equipment = decodeEquipmentCode(code);
+                if (!equipment) {
+                    alert('Invalid equipment code. Please check the code and try again.');
+                    return;
+                }
+                
+                if (!currentCharacter.equipment) {
+                    currentCharacter.equipment = [];
+                }
+                
+                equipment.source = 'code';
+                equipment.isStarting = false;
+                
+                // Check if already exists
+                const exists = currentCharacter.equipment.some(eq => {
+                    const eqName = typeof eq === 'string' ? eq : (eq.name || '');
+                    return eqName.toLowerCase() === equipment.name.toLowerCase() && !eq.isStarting;
+                });
+                
+                if (exists) {
+                    alert('This equipment is already in your list.');
+                    return;
+                }
+                
+                currentCharacter.equipment.push(equipment);
+                const section = document.getElementById('addEquipmentSectionCreation');
+                if (section) {
+                    section.style.display = 'none';
+                }
+                renderEquipmentSelection();
+            } catch (error) {
+                console.error('Error importing equipment code:', error);
+                alert('Error importing equipment: ' + (error.message || 'Unknown error') + '. Please try again.');
             }
-            
-            const equipment = decodeEquipmentCode(code);
-            if (!equipment) {
-                alert('Invalid equipment code. Please check the code and try again.');
-                return;
-            }
-            
-            if (!currentCharacter.equipment) {
-                currentCharacter.equipment = [];
-            }
-            
-            equipment.source = 'code';
-            equipment.isStarting = false;
-            
-            // Check if already exists
-            const exists = currentCharacter.equipment.some(eq => {
-                const eqName = typeof eq === 'string' ? eq : (eq.name || '');
-                return eqName.toLowerCase() === equipment.name.toLowerCase() && !eq.isStarting;
-            });
-            
-            if (exists) {
-                alert('This equipment is already in your list.');
-                return;
-            }
-            
-            currentCharacter.equipment.push(equipment);
-            document.getElementById('addEquipmentSectionCreation').style.display = 'none';
-            renderEquipmentSelection();
         }
 
         function removeEquipmentFromCharacter(index) {
@@ -4653,33 +5114,93 @@
         }
 
         function toggleTalent(talent) {
-            const checkbox = document.getElementById(`talent_${talent.replace(/\s+/g, '_')}`);
-            const index = currentCharacter.talents.indexOf(talent);
-            
-            if (checkbox.checked) {
-                if (index < 0) {
-                    currentCharacter.talents.push(talent);
-                }
-            } else {
-                // Don't allow removing starting talents
-                const background = backgrounds[currentCharacter.background];
-                const role = roles[currentCharacter.role];
-                const startingTalents = [...new Set([
-                    ...(background?.startingTalents || []),
-                    ...(role?.startingTalents || [])
-                ])];
-                
-                if (startingTalents.includes(talent)) {
-                    checkbox.checked = true;
-                    alert('You cannot remove starting talents!');
+            try {
+                if (!talent) {
+                    console.error('Invalid talent parameter');
                     return;
                 }
                 
-                if (index >= 0) {
-                    currentCharacter.talents.splice(index, 1);
+                if (!currentCharacter.talents) {
+                    currentCharacter.talents = [];
                 }
+                
+                const checkbox = document.getElementById(`talent_${talent.replace(/\s+/g, '_')}`);
+                if (!checkbox) {
+                    console.error('Talent checkbox not found');
+                    return;
+                }
+                
+                const index = currentCharacter.talents.indexOf(talent);
+                
+                if (checkbox.checked) {
+                    // Adding talent
+                    if (index < 0) {
+                        currentCharacter.talents.push(talent);
+                        console.log(`Added talent "${talent}" to array. Total talents: ${currentCharacter.talents.length}`);
+                    } else {
+                        console.log(`Talent "${talent}" already in array`);
+                    }
+                } else {
+                    // Removing talent - don't allow removing starting talents
+                    if (!currentCharacter.background || !currentCharacter.role) {
+                        console.warn('Cannot check starting talents - missing background or role');
+                        return;
+                    }
+                    
+                    const background = backgrounds[currentCharacter.background];
+                    const role = roles[currentCharacter.role];
+                    
+                    if (!background || !role) {
+                        console.error('Invalid background or role data');
+                        return;
+                    }
+                    
+                    // Check if this is a starting talent (including resolved "or" choices)
+                    const startingTalentsRaw = [...new Set([
+                        ...(background?.startingTalents || []),
+                        ...(role?.startingTalents || [])
+                    ])];
+                    
+                    // Resolve "or" choices to check if talent is granted
+                    const grantedTalents = new Set();
+                    if (currentCharacter.talentChoices) {
+                        startingTalentsRaw.forEach(talentEntry => {
+                            if (isTalentChoice(talentEntry)) {
+                                const chosen = currentCharacter.talentChoices[talentEntry];
+                                if (chosen) {
+                                    grantedTalents.add(chosen);
+                                }
+                            } else {
+                                grantedTalents.add(talentEntry);
+                            }
+                        });
+                    } else {
+                        startingTalentsRaw.forEach(t => {
+                            if (!isTalentChoice(t)) {
+                                grantedTalents.add(t);
+                            }
+                        });
+                    }
+                    
+                    if (grantedTalents.has(talent)) {
+                        checkbox.checked = true;
+                        alert('You cannot remove starting talents!');
+                        return;
+                    }
+                    
+                    // Remove the talent
+                    if (index >= 0) {
+                        currentCharacter.talents.splice(index, 1);
+                        console.log(`Removed talent "${talent}" from array. Total talents: ${currentCharacter.talents.length}`);
+                    }
+                }
+                
+                // Always update XP display after any change
+                console.log(`Calling updateXPDisplayTalents() with talents:`, currentCharacter.talents);
+                updateXPDisplayTalents();
+            } catch (error) {
+                console.error('Error toggling talent:', error);
             }
-            updateXPDisplayTalents();
         }
 
         function updateXPDisplay() {
@@ -4827,27 +5348,6 @@
             'Weapon Training': ['General', 'Offence']
         };
 
-        function getMatchingAptitudesForTalent(talent) {
-            const charApts = currentCharacter.selectedAptitudes || [];
-            // All characters have General
-            const allCharApts = [...charApts];
-            if (!allCharApts.includes('General')) {
-                allCharApts.push('General');
-            }
-            
-            // Get talent aptitudes
-            const talentApts = talentAptitudes[talent] || [];
-            
-            // Count matches
-            let matches = 0;
-            talentApts.forEach(apt => {
-                if (allCharApts.includes(apt)) {
-                    matches++;
-                }
-            });
-            
-            return Math.min(matches, 2); // Max 2 matching aptitudes
-        }
 
         // Helper function to calculate talent cost
         function calculateTalentCostForTalent(talent) {
@@ -4870,114 +5370,128 @@
         }
 
         function updateXPDisplayTalents() {
-            const background = backgrounds[currentCharacter.background];
-            const role = roles[currentCharacter.role];
-            const startingTalentsRaw = [...new Set([
-                ...(background?.startingTalents || []),
-                ...(role?.startingTalents || [])
-            ])];
-            
-            // Resolve "or" choices to get actual granted talents
-            const grantedTalents = new Set();
-            if (currentCharacter.talentChoices) {
-                startingTalentsRaw.forEach(talentEntry => {
-                    if (talentEntry.includes(' or ')) {
-                        const chosen = currentCharacter.talentChoices[talentEntry];
-                        if (chosen) {
-                            grantedTalents.add(chosen);
+            try {
+                const background = backgrounds[currentCharacter.background];
+                const role = roles[currentCharacter.role];
+                const startingTalentsRaw = [...new Set([
+                    ...(background?.startingTalents || []),
+                    ...(role?.startingTalents || [])
+                ])];
+                
+                // Resolve "or" choices to get actual granted talents
+                const grantedTalents = new Set();
+                if (currentCharacter.talentChoices) {
+                    startingTalentsRaw.forEach(talentEntry => {
+                        if (isTalentChoice(talentEntry)) {
+                            const chosen = currentCharacter.talentChoices[talentEntry];
+                            if (chosen) {
+                                grantedTalents.add(chosen);
+                            }
+                        } else {
+                            grantedTalents.add(talentEntry);
                         }
-                    } else {
-                        grantedTalents.add(talentEntry);
-                    }
-                });
-            } else {
-                // Fallback: add all non-"or" talents
-                startingTalentsRaw.forEach(talent => {
-                    if (!talent.includes(' or ')) {
-                        grantedTalents.add(talent);
-                    }
-                });
-            }
-            
-            // Handle starting skills with "or" choices
-            const startingSkillsRaw = [...new Set([
-                ...(background?.startingSkills || []),
-                ...(role?.startingSkills || [])
-            ])];
-            const grantedSkills = new Set();
-            if (currentCharacter.skillChoices) {
-                startingSkillsRaw.forEach(skillEntry => {
-                    if (skillEntry.includes(' or ')) {
-                        const chosen = currentCharacter.skillChoices[skillEntry];
-                        if (chosen) {
-                            grantedSkills.add(chosen);
+                    });
+                } else {
+                    // Fallback: add all non-choice talents
+                    startingTalentsRaw.forEach(talent => {
+                        if (!isTalentChoice(talent)) {
+                            grantedTalents.add(talent);
                         }
-                    } else {
-                        grantedSkills.add(skillEntry);
-                    }
-                });
-            } else {
-                startingSkillsRaw.forEach(skill => {
-                    if (!skill.includes(' or ')) {
-                        grantedSkills.add(skill);
-                    }
-                });
-            }
-            
-            let skillSpent = 0;
-            // Calculate skill costs (excluding starting/granted skills)
-            // Use the same logic as updateXPDisplay() to ensure consistency
-            Object.keys(currentCharacter.skills).forEach(skill => {
-                if (grantedSkills.has(skill)) {
-                    return; // Starting skills are free
+                    });
                 }
                 
-                const rank = currentCharacter.skills[skill] || 0;
-                // Calculate cumulative cost for the skill up to current rank
-                // Rank 0 = Known, Rank 1 = Trained, Rank 2 = Experienced, Rank 3 = Veteran
-                // Costs are cumulative and based on matching aptitudes
-                // Include rank 0 because learning a skill (even at rank 0) costs XP
-                skillSpent += calculateTotalSkillCost(skill, rank);
-            });
-            
-            // Calculate talent costs (excluding starting/granted talents)
-            let talentSpent = 0;
-            if (currentCharacter.talents) {
-                currentCharacter.talents.forEach(talent => {
-                    if (!grantedTalents.has(talent)) {
-                        talentSpent += calculateTalentCostForTalent(talent);
-                    }
-                });
-            }
-            
-            // Calculate total spent (skills + talents)
-            const totalSpent = skillSpent + talentSpent;
-            
-            // Update xpRemaining - use the base 1000 minus all spending
-            currentCharacter.xpRemaining = 1000 - totalSpent;
-            
-            // Update the display
-            const xpDisplay = document.getElementById('xpRemainingTalents');
-            if (xpDisplay) {
-                xpDisplay.textContent = currentCharacter.xpRemaining;
-            }
-            
-            // Also update the skills page XP display if it exists (for consistency)
-            const skillsXPDisplay = document.getElementById('xpRemaining');
-            if (skillsXPDisplay) {
-                skillsXPDisplay.textContent = currentCharacter.xpRemaining;
-            }
-            
-            if (currentCharacter.xpRemaining < 0) {
-                const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
-                if (xpContainer) xpContainer.classList.add('warning');
-                const skillsXPContainer = document.getElementById('xpRemaining')?.parentElement;
-                if (skillsXPContainer) skillsXPContainer.classList.add('warning');
-            } else {
-                const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
-                if (xpContainer) xpContainer.classList.remove('warning');
-                const skillsXPContainer = document.getElementById('xpRemaining')?.parentElement;
-                if (skillsXPContainer) skillsXPContainer.classList.remove('warning');
+                // Handle starting skills with "or" choices
+                const startingSkillsRaw = [...new Set([
+                    ...(background?.startingSkills || []),
+                    ...(role?.startingSkills || [])
+                ])];
+                const grantedSkills = new Set();
+                if (currentCharacter.skillChoices) {
+                    startingSkillsRaw.forEach(skillEntry => {
+                        if (skillEntry.includes(' or ')) {
+                            const chosen = currentCharacter.skillChoices[skillEntry];
+                            if (chosen) {
+                                grantedSkills.add(chosen);
+                            }
+                        } else {
+                            grantedSkills.add(skillEntry);
+                        }
+                    });
+                } else {
+                    startingSkillsRaw.forEach(skill => {
+                        if (!skill.includes(' or ')) {
+                            grantedSkills.add(skill);
+                        }
+                    });
+                }
+                
+                let skillSpent = 0;
+                // Calculate skill costs (excluding starting/granted skills)
+                // Use the same logic as updateXPDisplay() to ensure consistency
+                if (currentCharacter.skills) {
+                    Object.keys(currentCharacter.skills).forEach(skill => {
+                        if (grantedSkills.has(skill)) {
+                            return; // Starting skills are free
+                        }
+                        
+                        const rank = currentCharacter.skills[skill] || 0;
+                        // Calculate cumulative cost for the skill up to current rank
+                        // Rank 0 = Known, Rank 1 = Trained, Rank 2 = Experienced, Rank 3 = Veteran
+                        // Costs are cumulative and based on matching aptitudes
+                        // Include rank 0 because learning a skill (even at rank 0) costs XP
+                        skillSpent += calculateTotalSkillCost(skill, rank);
+                    });
+                }
+                
+                // Calculate talent costs (excluding starting/granted talents)
+                let talentSpent = 0;
+                if (currentCharacter.talents && currentCharacter.talents.length > 0) {
+                    currentCharacter.talents.forEach(talent => {
+                        if (!grantedTalents.has(talent)) {
+                            const cost = calculateTalentCostForTalent(talent);
+                            talentSpent += cost;
+                            console.log(`Talent "${talent}" costs ${cost} XP (not granted)`);
+                        } else {
+                            console.log(`Talent "${talent}" is granted (free)`);
+                        }
+                    });
+                }
+                
+                // Calculate total spent (skills + talents)
+                const totalSpent = skillSpent + talentSpent;
+                
+                console.log(`XP Calculation: Skills=${skillSpent}, Talents=${talentSpent}, Total=${totalSpent}, Remaining=${1000 - totalSpent}`);
+                
+                // Update xpRemaining - use the base 1000 minus all spending
+                currentCharacter.xpRemaining = 1000 - totalSpent;
+                
+                // Update the display
+                const xpDisplay = document.getElementById('xpRemainingTalents');
+                if (xpDisplay) {
+                    xpDisplay.textContent = currentCharacter.xpRemaining;
+                } else {
+                    console.error('xpRemainingTalents element not found!');
+                }
+                
+                // Also update the skills page XP display if it exists (for consistency)
+                const skillsXPDisplay = document.getElementById('xpRemaining');
+                if (skillsXPDisplay) {
+                    skillsXPDisplay.textContent = currentCharacter.xpRemaining;
+                }
+                
+                if (currentCharacter.xpRemaining < 0) {
+                    const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
+                    if (xpContainer) xpContainer.classList.add('warning');
+                    const skillsXPContainer = document.getElementById('xpRemaining')?.parentElement;
+                    if (skillsXPContainer) skillsXPContainer.classList.add('warning');
+                } else {
+                    const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
+                    if (xpContainer) xpContainer.classList.remove('warning');
+                    const skillsXPContainer = document.getElementById('xpRemaining')?.parentElement;
+                    if (skillsXPContainer) skillsXPContainer.classList.remove('warning');
+                }
+            } catch (error) {
+                console.error('Error in updateXPDisplayTalents:', error);
             }
         }
 
@@ -5028,9 +5542,13 @@
         }
 
         function renderDivination() {
-            // This function is called when entering step 9
-            const rollArea = document.getElementById('divinationRollArea');
-            if (!rollArea) return;
+            try {
+                // This function is called when entering step 9
+                const rollArea = document.getElementById('divinationRollArea');
+                if (!rollArea) {
+                    console.warn('divinationRollArea container not found');
+                    return;
+                }
             
             if (currentCharacter.diceRolls.divination) {
                 const roll = currentCharacter.diceRolls.divination;
@@ -5059,6 +5577,13 @@
                         🎲 Roll Divination (1d100)
                     </button>
                 `;
+            }
+            } catch (error) {
+                console.error('Error rendering divination:', error);
+                const rollArea = document.getElementById('divinationRollArea');
+                if (rollArea) {
+                    rollArea.innerHTML = '<p style="color: #ff6b6b;">Error loading divination. Please try again.</p>';
+                }
             }
         }
 
@@ -5882,21 +6407,37 @@
         }
 
         function editEquipmentItemCreation(index) {
-            if (!currentCharacter.equipment || index < 0 || index >= currentCharacter.equipment.length) return;
-            
-            const additionalEquipment = currentCharacter.equipment.filter(item => !item.isStarting);
-            if (index >= additionalEquipment.length) return;
-            
-            const item = additionalEquipment[index];
-            const fullIndex = currentCharacter.equipment.findIndex(eq => eq === item);
-            
-            // For now, show a simple edit prompt - could be enhanced with full form
-            const newName = prompt('Edit equipment name:', item.name || '');
-            if (newName !== null && newName.trim()) {
-                if (fullIndex >= 0) {
-                    currentCharacter.equipment[fullIndex].name = newName.trim();
-                    renderEquipmentSelection();
+            try {
+                if (!currentCharacter.equipment || index < 0 || index >= currentCharacter.equipment.length) {
+                    console.warn('Invalid equipment index for editing');
+                    return;
                 }
+                
+                const additionalEquipment = currentCharacter.equipment.filter(item => !item.isStarting);
+                if (index >= additionalEquipment.length) {
+                    console.warn('Equipment index out of range');
+                    return;
+                }
+                
+                const item = additionalEquipment[index];
+                if (!item) {
+                    console.error('Equipment item not found');
+                    return;
+                }
+                
+                const fullIndex = currentCharacter.equipment.findIndex(eq => eq === item);
+                
+                // For now, show a simple edit prompt - could be enhanced with full form
+                const newName = prompt('Edit equipment name:', item.name || '');
+                if (newName !== null && newName.trim()) {
+                    if (fullIndex >= 0) {
+                        currentCharacter.equipment[fullIndex].name = newName.trim();
+                        renderEquipmentSelection();
+                    }
+                }
+            } catch (error) {
+                console.error('Error editing equipment:', error);
+                alert('Error editing equipment. Please try again.');
             }
         }
 
@@ -6620,8 +7161,18 @@
         }
 
         function getMatchingAptitudesForTalent(talent, aptitudes) {
+            // Handle both cases: during creation (aptitudes undefined) and XP manager (aptitudes provided)
+            let allApts;
+            if (aptitudes !== undefined) {
+                // XP manager case - use provided aptitudes
+                allApts = [...aptitudes];
+            } else {
+                // Character creation case - use currentCharacter.selectedAptitudes
+                const charApts = currentCharacter.selectedAptitudes || [];
+                allApts = [...charApts];
+            }
+            
             // All characters have General
-            const allApts = [...aptitudes];
             if (!allApts.includes('General')) {
                 allApts.push('General');
             }
