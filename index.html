@@ -516,6 +516,32 @@
             width: 60px;
         }
 
+        /* Choice buttons container */
+        .choice-buttons-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .choice-buttons-container {
+                flex-direction: column;
+            }
+
+            .choice-buttons-container button {
+                width: 100%;
+                min-height: 44px;
+            }
+
+            .choose-option-button {
+                width: 100% !important;
+                margin-left: 0 !important;
+                margin-top: 8px !important;
+                min-height: 40px !important;
+                padding: 10px 14px !important;
+            }
+        }
+
         .tooltip {
             position: relative;
             display: inline-block;
@@ -927,8 +953,62 @@
             /* Buttons in lists */
             #startingSkillsList button,
             #startingTalentsList button {
-                padding: 8px 12px;
-                font-size: 0.85em;
+                padding: 10px 14px !important;
+                font-size: 0.9em !important;
+                min-height: 44px; /* Touch target size */
+            }
+
+            /* Choice buttons for aptitudes, skills, talents - handled by .choice-buttons-container class */
+
+            /* Aptitude choice section */
+            #autoAptitudes div[style*="background: rgba(74, 144, 226, 0.1)"] {
+                padding: 12px !important;
+            }
+
+            #autoAptitudes div[style*="background: rgba(74, 144, 226, 0.1)"] h4 {
+                font-size: 1.1em !important;
+            }
+
+            #autoAptitudes div[style*="background: rgba(255,255,255,0.05)"] {
+                padding: 12px !important;
+                margin-bottom: 12px !important;
+            }
+
+            /* Skill and talent item controls row */
+            .skill-item > div[style*="display: flex"],
+            .talent-item > div[style*="display: flex"] {
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+            }
+
+            .skill-item input[type="number"],
+            .talent-item input[type="number"] {
+                flex: 0 0 auto !important;
+                width: 80px !important;
+                min-width: 80px !important;
+            }
+
+            .skill-item label,
+            .talent-item label {
+                flex: 1 1 calc(100% - 100px) !important;
+                min-width: 0 !important;
+                word-wrap: break-word !important;
+            }
+
+            .skill-item span[style*="white-space: nowrap"],
+            .talent-item span[style*="white-space: nowrap"] {
+                flex: 1 1 100% !important;
+                white-space: normal !important;
+                text-align: left !important;
+                margin-top: 5px !important;
+                font-size: 0.85em !important;
+            }
+
+            /* Ensure skill/talent descriptions don't overflow */
+            .skill-item p,
+            .talent-item p {
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
             }
 
             /* Equipment selection */
@@ -963,7 +1043,21 @@
 
             /* Aptitude selection grid */
             #aptitudeSelection > div[style*="grid"] {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Option cards for aptitudes */
+            #aptitudeSelection .option-card {
+                padding: 12px !important;
+            }
+
+            #aptitudeSelection .option-card h4 {
+                font-size: 1.1em !important;
+            }
+
+            #aptitudeSelection .option-card p {
+                font-size: 0.85em !important;
+                line-height: 1.5 !important;
             }
 
             /* Dice roller section */
@@ -3447,11 +3541,11 @@
                             return `
                                 <div style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 3px;">
                                     <strong>${sourceName}:</strong> Choose one
-                                    <div style="display: flex; gap: 10px; margin-top: 8px;">
+                                    <div class="choice-buttons-container" style="margin-top: 8px;">
                                         ${choice.options.map(opt => `
                                             <button type="button" 
                                                     onclick="selectAptitudeChoice('${choiceKey}', '${opt}')"
-                                                    style="padding: 8px 15px; ${choice.selected === opt ? 'background: #4a90e2;' : 'background: rgba(255,255,255,0.1);'} border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
+                                                    style="flex: 1; min-width: 120px; padding: 10px 15px; ${choice.selected === opt ? 'background: #4a90e2; color: white;' : 'background: rgba(255,255,255,0.1); color: #e0e0e0;'} border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer; font-size: 0.95em;">
                                                 ${opt}
                                             </button>
                                         `).join('')}
@@ -3637,12 +3731,12 @@
                                         <strong style="color: #4a90e2;">${skill}</strong>
                                         <span style="color: #4a90e2; font-size: 0.9em;"> (Free - Choose one)</span>
                                     </div>
-                                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <div class="choice-buttons-container">
                                         ${options.map(opt => {
                                             const isChosen = opt === chosen;
                                             return `
                                                 <button onclick="chooseSkillOption('${choiceKey}', '${opt}')" 
-                                                        style="padding: 6px 12px; font-size: 0.85em; 
+                                                        style="flex: 1; padding: 10px 14px; font-size: 0.9em; 
                                                                ${isChosen ? 'background: #4a90e2; color: white; border: 1px solid #4a90e2;' : 'background: rgba(74, 144, 226, 0.2); color: #4a90e2; border: 1px solid #4a90e2;'} 
                                                                border-radius: 3px; cursor: pointer; transition: all 0.2s;">
                                                     ${opt} ${isChosen ? '✓' : ''}
@@ -3700,7 +3794,8 @@
                 if (isUnchosenOption) {
                     // This is an option in an "or" choice but not the chosen one - show button to switch
                     choiceUI = `<button onclick="chooseSkillOption('${skillChoice.choiceKey}', '${skill}')" 
-                                         style="margin-left: 10px; padding: 2px 8px; font-size: 11px; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
+                                         class="choose-option-button"
+                                         style="margin-left: 10px; padding: 6px 12px; font-size: 0.85em; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
                                     Choose This (Free)
                                  </button>`;
                 }
@@ -3919,12 +4014,12 @@
                                         <strong style="color: #4a90e2;">${talent}</strong>
                                         <span style="color: #4a90e2; font-size: 0.9em;"> (Free - Choose one)</span>
                                     </div>
-                                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <div class="choice-buttons-container">
                                         ${options.map(opt => {
                                             const isChosen = opt === chosen;
                                             return `
                                                 <button onclick="chooseTalentOption('${choiceKey}', '${opt}')" 
-                                                        style="padding: 6px 12px; font-size: 0.85em; 
+                                                        style="flex: 1; padding: 10px 14px; font-size: 0.9em; 
                                                                ${isChosen ? 'background: #4a90e2; color: white; border: 1px solid #4a90e2;' : 'background: rgba(74, 144, 226, 0.2); color: #4a90e2; border: 1px solid #4a90e2;'} 
                                                                border-radius: 3px; cursor: pointer; transition: all 0.2s;">
                                                     ${opt} ${isChosen ? '✓' : ''}
@@ -3978,7 +4073,8 @@
                 let choiceUI = '';
                 if (isUnchosenOption) {
                     choiceUI = `<button onclick="chooseTalentOption('${talentChoice.choiceKey}', '${talent}')" 
-                                         style="margin-left: 10px; padding: 2px 8px; font-size: 11px; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
+                                         class="choose-option-button"
+                                         style="margin-left: 10px; padding: 6px 12px; font-size: 0.85em; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
                                     Choose This (Free)
                                  </button>`;
                 }
