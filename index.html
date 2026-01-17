@@ -3337,8 +3337,20 @@
                 }
 
                 if (newValue > 40) {
-                    input.value = 40;
-                    currentCharacter.characteristics[stat] = 40;
+                    // Cap at 40 and recalculate points based on actual change
+                    const cappedValue = 40;
+                    const actualDifference = cappedValue - oldValue;
+                    
+                    // Check if we have enough points for this change
+                    if (currentCharacter.pointsRemaining - actualDifference < 0) {
+                        input.value = oldValue;
+                        alert('Not enough points remaining!');
+                        return;
+                    }
+                    
+                    input.value = cappedValue;
+                    currentCharacter.characteristics[stat] = cappedValue;
+                    currentCharacter.pointsRemaining -= actualDifference;
                     updatePointsDisplay();
                     return;
                 }
