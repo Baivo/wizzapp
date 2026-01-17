@@ -800,6 +800,12 @@
                 margin-bottom: 5px;
             }
 
+            .skill-item p,
+            .talent-item p {
+                font-size: 0.8em !important;
+                margin-left: 30px !important;
+            }
+
             .skill-item input[type="number"],
             .talent-item input[type="number"] {
                 width: 70px;
@@ -3508,13 +3514,12 @@
                     ${finalApts.map(apt => {
                         const description = aptitudeDescriptions[apt] || 'No description available.';
                         return `
-                        <div class="option-card selected" id="apt_${apt.replace(/\s+/g, '_')}" 
-                             style="position: relative; cursor: help;" 
-                             onmouseenter="showTooltip(event, '${apt.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}')"
-                             onmouseleave="hideTooltip()">
+                        <div class="option-card selected" id="apt_${apt.replace(/\s+/g, '_')}">
                             <h4>${apt}</h4>
-                            <p style="font-size: 0.8em; color: #4a90e2;">Granted</p>
-                            <span style="position: absolute; top: 5px; right: 5px; color: #4a90e2; font-size: 0.8em;">ℹ️</span>
+                            <p style="font-size: 0.9em; color: #b0b0b0; margin-bottom: 8px; line-height: 1.5;">${description}</p>
+                            <div class="bonuses">
+                                <span style="color: #4a90e2; font-size: 0.85em;">Granted</span>
+                            </div>
                         </div>
                     `;
                     }).join('')}
@@ -3553,7 +3558,7 @@
                         <p style="color: #b0b0b0; font-size: 0.9em; line-height: 1.6;">
                             <strong>Skills represent your character's ability to perform specific tasks.</strong> 
                             Skills have ranks from 0 (Known) to 3+ (Veteran). Higher ranks make you more effective at using that skill. 
-                            Hover over any skill name (ℹ️) to see what it does. Starting skills from your Background and Role are free. 
+                            Each skill's description is shown below its name. Starting skills from your Background and Role are free. 
                             Additional skills cost Experience Points (XP) based on how many matching aptitudes you have.
                         </p>
                     </div>
@@ -3706,29 +3711,31 @@
                 
                 const skillDesc = skillDescriptions[skill] || 'No description available.';
                 return `
-                    <div class="skill-item" style="${isStartingSkill && !isUnchosenOption ? 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;' : ''}">
-                        <input type="checkbox" id="skill_${skill.replace(/\s+/g, '_')}" 
-                               ${isStartingSkill && !isUnchosenOption ? 'checked disabled' : (currentLevel !== null ? 'checked' : '')} 
-                               onchange="toggleSkill('${skill}')">
-                        <label for="skill_${skill.replace(/\s+/g, '_')}" style="flex: 1; margin: 0; cursor: help;" 
-                               onmouseenter="showTooltip(event, '${skill.replace(/'/g, "\\'")}', '${skillDesc.replace(/'/g, "\\'")}')"
-                               onmouseleave="hideTooltip()">
-                            ${skill} 
-                            <span style="color: #4a90e2; margin-left: 5px; font-size: 0.8em;">ℹ️</span>
-                            ${isStartingSkill && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;">(Starting)</span>' : ''}
-                            ${skillChoice && isChosenFromChoice ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Chosen - Free)</span>' : ''}
-                            ${isUnchosenOption ? '<span style="color: #ff6b6b; font-size: 0.8em;"> (Other Option - Costs XP)</span>' : ''}
-                            ${choiceUI}
-                        </label>
-                        <input type="number" id="skillval_${skill.replace(/\s+/g, '_')}" 
-                               min="0" max="100" value="${currentLevel !== null ? currentLevel : 0}" 
-                               ${inputDisabled ? 'disabled' : ''} 
-                               onchange="updateSkillLevel('${skill}')" 
-                               title="Skill Rank: 0 = basic proficiency, 1+ = advanced ranks"
-                               style="width: 80px;">
-                        <span style="color: ${isStartingSkill && !isUnchosenOption ? '#4a90e2' : '#4a90e2'}; font-size: 0.9em;">
-                            ${costDisplay}
-                        </span>
+                    <div class="skill-item" style="${isStartingSkill && !isUnchosenOption ? 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;' : ''} display: flex; flex-direction: column; padding: 12px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <input type="checkbox" id="skill_${skill.replace(/\s+/g, '_')}" 
+                                   ${isStartingSkill && !isUnchosenOption ? 'checked disabled' : (currentLevel !== null ? 'checked' : '')} 
+                                   onchange="toggleSkill('${skill}')">
+                            <label for="skill_${skill.replace(/\s+/g, '_')}" style="flex: 1; margin: 0; font-weight: bold; color: #ff6b6b;">
+                                ${skill}
+                                ${isStartingSkill && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Starting)</span>' : ''}
+                                ${skillChoice && isChosenFromChoice ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Chosen - Free)</span>' : ''}
+                                ${isUnchosenOption ? '<span style="color: #ff6b6b; font-size: 0.8em;"> (Other Option - Costs XP)</span>' : ''}
+                                ${choiceUI}
+                            </label>
+                            <input type="number" id="skillval_${skill.replace(/\s+/g, '_')}" 
+                                   min="0" max="100" value="${currentLevel !== null ? currentLevel : 0}" 
+                                   ${inputDisabled ? 'disabled' : ''} 
+                                   onchange="updateSkillLevel('${skill}')" 
+                                   title="Skill Rank: 0 = basic proficiency, 1+ = advanced ranks"
+                                   style="width: 80px;">
+                            <span style="color: ${isStartingSkill && !isUnchosenOption ? '#4a90e2' : '#4a90e2'}; font-size: 0.9em; white-space: nowrap;">
+                                ${costDisplay}
+                            </span>
+                        </div>
+                        <p style="font-size: 0.85em; color: #b0b0b0; margin: 0 0 0 30px; line-height: 1.4; font-style: italic;">
+                            ${skillDesc}
+                        </p>
                     </div>
                 `;
             }).join('');
@@ -3838,7 +3845,7 @@
                         <p style="color: #b0b0b0; font-size: 0.9em; line-height: 1.6;">
                             <strong>Talents are special abilities that are always active and don't require tests to use.</strong> 
                             Unlike skills, talents provide passive bonuses or special capabilities. Examples include weapon training, 
-                            combat abilities, and special traits. Hover over any talent name (ℹ️) to see what it does. 
+                            combat abilities, and special traits. Each talent's description is shown below its name. 
                             Starting talents from your Background and Role are free. Additional talents cost Experience Points (XP) 
                             based on their tier and how many matching aptitudes you have.
                         </p>
@@ -3978,24 +3985,26 @@
                 
                 const talentDesc = talentDescriptions[talent] || 'No description available.';
                 return `
-                    <div class="talent-item" style="${isGrantedTalent && !isUnchosenOption ? 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;' : ''}">
-                        <input type="checkbox" id="talent_${talent.replace(/\s+/g, '_')}" 
-                               ${hasTalent ? 'checked' : ''} 
-                               ${isGrantedTalent && !isUnchosenOption ? 'disabled' : ''}
-                               onchange="toggleTalent('${talent}')">
-                        <label for="talent_${talent.replace(/\s+/g, '_')}" style="flex: 1; margin: 0; cursor: help;" 
-                               onmouseenter="showTooltip(event, '${talent.replace(/'/g, "\\'")}', '${talentDesc.replace(/'/g, "\\'")}')"
-                               onmouseleave="hideTooltip()">
-                            ${talent} 
-                            <span style="color: #4a90e2; margin-left: 5px; font-size: 0.8em;">ℹ️</span>
-                            ${isGrantedTalent && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;">(Starting)</span>' : ''}
-                            ${talentChoice && isChosenFromChoice ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Chosen - Free)</span>' : ''}
-                            ${isUnchosenOption ? '<span style="color: #ff6b6b; font-size: 0.8em;"> (Other Option - Costs XP)</span>' : ''}
-                            ${choiceUI}
-                        </label>
-                        <span style="color: ${isGrantedTalent && !isUnchosenOption ? '#4a90e2' : '#4a90e2'}; font-size: 0.9em;">
-                            ${isGrantedTalent && !isUnchosenOption ? 'Free' : `${cost} XP (Tier ${tier}, ${matches} apt)`}
-                        </span>
+                    <div class="talent-item" style="${isGrantedTalent && !isUnchosenOption ? 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;' : ''} display: flex; flex-direction: column; padding: 12px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <input type="checkbox" id="talent_${talent.replace(/\s+/g, '_')}" 
+                                   ${hasTalent ? 'checked' : ''} 
+                                   ${isGrantedTalent && !isUnchosenOption ? 'disabled' : ''}
+                                   onchange="toggleTalent('${talent}')">
+                            <label for="talent_${talent.replace(/\s+/g, '_')}" style="flex: 1; margin: 0; font-weight: bold; color: #ff6b6b;">
+                                ${talent}
+                                ${isGrantedTalent && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Starting)</span>' : ''}
+                                ${talentChoice && isChosenFromChoice ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Chosen - Free)</span>' : ''}
+                                ${isUnchosenOption ? '<span style="color: #ff6b6b; font-size: 0.8em;"> (Other Option - Costs XP)</span>' : ''}
+                                ${choiceUI}
+                            </label>
+                            <span style="color: ${isGrantedTalent && !isUnchosenOption ? '#4a90e2' : '#4a90e2'}; font-size: 0.9em; white-space: nowrap;">
+                                ${isGrantedTalent && !isUnchosenOption ? 'Free' : `${cost} XP (Tier ${tier}, ${matches} apt)`}
+                            </span>
+                        </div>
+                        <p style="font-size: 0.85em; color: #b0b0b0; margin: 0 0 0 30px; line-height: 1.4; font-style: italic;">
+                            ${talentDesc}
+                        </p>
                     </div>
                 `;
                 }).join('');
