@@ -266,6 +266,29 @@
             margin-right: 5px;
         }
 
+        /* Tooltip styles */
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            color: #e0e0e0;
+            padding: 12px 16px;
+            border-radius: 5px;
+            border: 1px solid #4a90e2;
+            max-width: 400px;
+            z-index: 10000;
+            pointer-events: none;
+            font-size: 0.9em;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip strong {
+            color: #4a90e2;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
         .wizard-step.active .wizard-step-label {
             color: #ff6b6b;
             font-weight: bold;
@@ -744,6 +767,7 @@
                     <div class="form-section">
                         <h3>Select Skills</h3>
                         <p style="color: #b0b0b0; margin-bottom: 20px;">You start with <strong>1,000 Experience Points</strong>. Spend them on skills. Skills you already have from your background and role are shown below.</p>
+                        <div id="skillsInfo"></div>
                         <div class="auto-assigned" style="margin-bottom: 20px;">
                             <h5>Starting Skills (from Background & Role):</h5>
                             <div id="startingSkillsList"></div>
@@ -760,6 +784,7 @@
                     <div class="form-section">
                         <h3>Select Talents</h3>
                         <p style="color: #b0b0b0; margin-bottom: 20px;">Spend your remaining XP on talents. Talents you already have from your background and role are shown below. You start with 1,000 XP total.</p>
+                        <div id="talentsInfo"></div>
                         <div class="auto-assigned" style="margin-bottom: 20px;">
                             <h5>Starting Talents (from Background & Role):</h5>
                             <div id="startingTalentsList"></div>
@@ -1285,6 +1310,29 @@
             'Perception', 'Psyker', 'Social', 'Strength', 'Tech', 'Toughness',
             'Weapon Skill', 'Willpower'
         ];
+
+        // Aptitude descriptions - what they affect and how they work
+        const aptitudeDescriptions = {
+            'Agility': 'Affects skills and talents related to movement, dodging, and physical dexterity. Reduces XP cost for Acrobatics, Dodge, and Stealth.',
+            'Ballistic Skill': 'Affects skills and talents related to ranged combat. Reduces XP cost for ranged weapon training and marksmanship talents.',
+            'Defence': 'Affects skills and talents related to protection and survival. Reduces XP cost for defensive talents and armor-related abilities.',
+            'Fieldcraft': 'Affects skills and talents related to survival, navigation, and operating in the field. Reduces XP cost for Survival, Navigate, and Operate skills.',
+            'Finesse': 'Affects skills and talents related to precision and fine manipulation. Reduces XP cost for Sleight of Hand, Tech-Use, and precise combat abilities.',
+            'Fellowship': 'Affects skills and talents related to social interaction and leadership. Reduces XP cost for Charm, Command, and social talents.',
+            'Intelligence': 'Affects skills and talents related to knowledge, reasoning, and learning. Reduces XP cost for Logic, Scholastic Lore, and knowledge-based skills.',
+            'Knowledge': 'Affects skills and talents related to information and lore. Reduces XP cost for Common Lore, Forbidden Lore, and Scholastic Lore skills.',
+            'Leadership': 'Affects skills and talents related to commanding others and inspiring followers. Reduces XP cost for Command and leadership-related talents.',
+            'Offence': 'Affects skills and talents related to attacking and dealing damage. Reduces XP cost for weapon training and combat talents.',
+            'Perception': 'Affects skills and talents related to noticing details and awareness. Reduces XP cost for Awareness, Scrutiny, and perception-based talents.',
+            'Psyker': 'Affects skills and talents related to psychic powers and the Warp. Reduces XP cost for Psyniscience and psychic abilities.',
+            'Social': 'Affects skills and talents related to interaction and persuasion. Reduces XP cost for Charm, Deceive, and social interaction skills.',
+            'Strength': 'Affects skills and talents related to physical power and melee combat. Reduces XP cost for Athletics and melee weapon training.',
+            'Tech': 'Affects skills and talents related to technology and machinery. Reduces XP cost for Tech-Use, Security, and technology-related abilities.',
+            'Toughness': 'Affects skills and talents related to endurance and resilience. Reduces XP cost for defensive talents and survival abilities.',
+            'Weapon Skill': 'Affects skills and talents related to melee combat. Reduces XP cost for melee weapon training and close combat talents.',
+            'Willpower': 'Affects skills and talents related to mental fortitude and resistance. Reduces XP cost for resisting fear, corruption, and psychic powers.',
+            'General': 'A universal aptitude that all characters possess. It reduces XP costs for a wide variety of skills and talents, making it versatile but less specialized.'
+        };
 
         // Equipment Database - Core Rulebook Equipment
         const equipmentDatabase = {
@@ -2093,6 +2141,40 @@
             'Security', 'Sleight of Hand', 'Stealth', 'Survival', 'Tech-Use', 'Trade'
         ];
 
+        // Skill descriptions - what each skill does
+        const skillDescriptions = {
+            'Acrobatics': 'The ability to perform athletic feats, maintain balance, and move with agility. Used for climbing, jumping, tumbling, and avoiding obstacles.',
+            'Athletics': 'Physical prowess and endurance. Used for running, swimming, lifting heavy objects, and performing strenuous physical activities.',
+            'Awareness': 'The ability to notice details in your surroundings. Used to spot hidden objects, detect ambushes, and notice changes in the environment.',
+            'Charm': 'The ability to make a good impression and win people over through charisma and social grace. Used to make friends, gain trust, and influence others positively.',
+            'Command': 'The ability to lead and direct others effectively. Used to give orders, coordinate groups, and inspire followers in combat or social situations.',
+            'Commerce': 'Knowledge of trade, economics, and business practices. Used to negotiate prices, evaluate goods, and understand market values.',
+            'Common Lore': 'General knowledge about the Imperium, its institutions, and common facts. Specializations include specific organizations or regions.',
+            'Deceive': 'The ability to lie convincingly and mislead others. Used to create false identities, spread misinformation, and avoid detection through deception.',
+            'Dodge': 'The ability to avoid attacks through quick movement and reflexes. Used to evade melee and ranged attacks in combat.',
+            'Evaluate': 'The ability to assess the value, quality, or authenticity of items. Used to appraise goods, identify forgeries, and determine item worth.',
+            'Forbidden Lore': 'Knowledge of dangerous, heretical, or restricted information. Specializations include Daemonology, Heresy, the Warp, and Xenos.',
+            'Inquiry': 'The ability to gather information through conversation and investigation. Used to question witnesses, research topics, and uncover secrets.',
+            'Interrogation': 'The ability to extract information through forceful questioning and intimidation. Used to break suspects, gain confessions, and uncover hidden truths.',
+            'Intimidate': 'The ability to inspire fear and compliance through threats and displays of power. Used to coerce others, break resistance, and establish dominance.',
+            'Linguistics': 'Knowledge of languages and communication systems. Specializations include specific languages like High Gothic, Low Gothic, or Xenos languages.',
+            'Logic': 'The ability to reason, solve problems, and think analytically. Used to solve puzzles, analyze evidence, and make logical deductions.',
+            'Medicae': 'Medical knowledge and the ability to treat injuries and illnesses. Used to heal wounds, diagnose conditions, and perform surgery.',
+            'Navigate': 'The ability to find your way and understand spatial relationships. Specializations include Surface (planets), Stellar (space), and Warp navigation.',
+            'Operate': 'The ability to operate vehicles and machinery. Specializations include Surface (ground vehicles), Aeronautica (aircraft), and Voidship (spacecraft).',
+            'Parry': 'The ability to block and deflect attacks with melee weapons. Used to defend against melee attacks in combat.',
+            'Perform': 'The ability to entertain and create art. Specializations include specific forms like singing, acting, or playing instruments.',
+            'Psyniscience': 'The ability to sense and detect psychic phenomena, the Warp, and psykers. Essential for detecting psychic powers and Warp disturbances.',
+            'Scholastic Lore': 'Academic knowledge and scholarly expertise. Specializations include specific fields like Imperial History, Tactica Imperialis, or specific sciences.',
+            'Scrutiny': 'The ability to carefully examine and analyze details. Used to detect lies, read body language, and notice inconsistencies.',
+            'Security': 'Knowledge of locks, traps, and security systems. Used to pick locks, disable alarms, and bypass security measures.',
+            'Sleight of Hand': 'The ability to perform manual dexterity tricks and manipulate objects unnoticed. Used for pickpocketing, palming items, and performing tricks.',
+            'Stealth': 'The ability to move and act without being detected. Used to sneak past guards, hide in shadows, and avoid notice.',
+            'Survival': 'The ability to survive in harsh environments and find resources. Used to find food, shelter, and navigate dangerous terrain.',
+            'Tech-Use': 'Knowledge of technology and the ability to operate, repair, and modify devices. Essential for using advanced Imperial technology.',
+            'Trade': 'Professional skills and craftsmanship. Specializations include specific trades like Armourer, Chemist, or Cryptographer.'
+        };
+
         const allTalents = [
             'Air of Authority', 'Ambidextrous', 'Armor of Contempt', 'Autosanguine',
             'Basic Weapon Training', 'Blade Master', 'Bulging Biceps', 'Catfall',
@@ -2109,6 +2191,66 @@
             'Thrown Weapon Training', 'Total Recall', 'Toughness', 'Two-Weapon Wielder',
             'Unarmed Warrior', 'Unshakeable Faith', 'Weapon Tech', 'Weapon Training'
         ];
+
+        // Talent descriptions - what each talent does
+        const talentDescriptions = {
+            'Air of Authority': 'Your presence commands respect. Gain bonuses to Command and Intimidate tests, and NPCs are more likely to follow your orders.',
+            'Ambidextrous': 'You can use both hands equally well. No penalty for using your off-hand, and can wield two weapons effectively.',
+            'Armor of Contempt': 'Your faith protects you from corruption. Gain bonuses to resist Corruption Points and psychic powers.',
+            'Autosanguine': 'Your body heals quickly. Regain wounds faster and resist disease and poison more effectively.',
+            'Basic Weapon Training': 'You are trained in the use of basic weapons (lasguns, autoguns, shotguns, etc.). Can use these weapons without penalty.',
+            'Blade Master': 'You are exceptionally skilled with bladed weapons. Gain bonuses to attack and damage with swords, knives, and similar weapons.',
+            'Bulging Biceps': 'Your arms are incredibly strong. Gain bonuses to Strength tests involving your arms and can carry more weight.',
+            'Catfall': 'You can fall great distances without harm. Reduce falling damage significantly.',
+            'Combat Master': 'You are a master of combat tactics. Gain bonuses to combat-related tests and can coordinate allies better.',
+            'Combat Sense': 'You have an instinct for danger in combat. Gain bonuses to Awareness tests in combat and can detect ambushes.',
+            'Counter Attack': 'You can quickly retaliate when attacked. Make an immediate counter-attack when successfully parried or dodged.',
+            'Crack Shot': 'You are an exceptional marksman. Gain bonuses to ranged attack tests and can make called shots more effectively.',
+            'Dual Strike': 'You can attack with both weapons simultaneously. Make two attacks in a single action when wielding two weapons.',
+            'Enemy': 'You have a specific enemy or organization that opposes you. This can provide story hooks and sometimes bonuses against that enemy.',
+            'Exotic Weapon Training': 'You are trained in unusual or rare weapons. Can use exotic weapons without penalty (specify which type).',
+            'Foresight': 'You can predict enemy actions. Gain bonuses to dodge and parry, and can anticipate attacks.',
+            'Hard Target': 'You are difficult to hit in combat. Enemies suffer penalties when attacking you.',
+            'Hatred': 'You have a deep hatred for a specific enemy type. Gain bonuses to attack and damage against that enemy type.',
+            'Heavy Weapon Training': 'You are trained in heavy weapons (heavy bolters, missile launchers, etc.). Can use these weapons without penalty.',
+            'Heightened Senses': 'Your senses are supernaturally acute. Gain bonuses to Awareness and Perception tests.',
+            'Hotshot Pilot': 'You are an exceptional vehicle pilot. Gain bonuses to Operate tests and can perform advanced maneuvers.',
+            'Independent Targeting': 'You can track and attack multiple targets simultaneously. No penalty for splitting attacks between targets.',
+            'Jaded': 'You have seen too much to be easily shocked. Gain bonuses to resist Fear and can ignore certain disturbing sights.',
+            'Lightning Attack': 'You can make multiple attacks in rapid succession. Gain an extra attack action in combat.',
+            'Lightning Reflexes': 'Your reactions are incredibly fast. Gain bonuses to Initiative and can react to threats more quickly.',
+            'Luminen Blast': 'You can discharge electrical energy from cybernetic implants. Deal energy damage to nearby enemies.',
+            'Luminen Charge': 'You can charge objects with electrical energy. Power devices or deal damage through touch.',
+            'Master Chirurgeon': 'You are an expert healer. Gain significant bonuses to Medicae tests and can perform advanced medical procedures.',
+            'Melee Weapon Training': 'You are trained in melee weapons (swords, axes, hammers, etc.). Can use these weapons without penalty.',
+            'Mighty Shot': 'Your ranged attacks hit with devastating force. Increase damage from ranged weapons.',
+            'Mimic': 'You can perfectly imitate voices and sounds. Gain bonuses to Deceive tests involving impersonation.',
+            'Nerves of Steel': 'You remain calm under extreme pressure. Gain bonuses to resist Fear and can act normally in terrifying situations.',
+            'Orthoproxy': 'You have advanced cybernetic prosthetics. Gain bonuses to Strength or Agility, and can interface with technology.',
+            'Paranoia': 'You are always watching for threats. Gain bonuses to Awareness and can detect ambushes more easily.',
+            'Peer': 'You have connections to a specific organization or group. Can call on favors and gain information from that group.',
+            'Pistol Weapon Training': 'You are trained in pistols (laspistols, autopistols, etc.). Can use these weapons without penalty.',
+            'Polyglot': 'You have a gift for languages. Learn new languages faster and gain bonuses to Linguistics tests.',
+            'Praise the Machine': 'Your faith in the Machine God grants you power. Gain bonuses when using technology and can interface with machines.',
+            'Psy Rating': 'You have psychic powers. Gain access to psychic disciplines and can manifest psychic abilities (requires Psyker elite advance).',
+            'Quick Draw': 'You can draw and ready weapons instantly. No action required to ready weapons.',
+            'Rapid Reload': 'You can reload weapons incredibly quickly. Reduce reload time for all weapons.',
+            'Resistance': 'You are resistant to a specific type of damage or effect. Gain bonuses to resist that type (specify: Cold, Heat, Poison, etc.).',
+            'Rival': 'You have a specific rival who opposes you. This provides story hooks and sometimes bonuses when competing with that rival.',
+            'Sound Constitution': 'You are exceptionally hardy. Gain additional Wounds, increasing your ability to survive damage.',
+            'Strong Minded': 'Your will is unbreakable. Gain bonuses to Willpower tests and resist mental effects more effectively.',
+            'Sure Strike': 'Your attacks are precise and well-aimed. Gain bonuses to melee attack tests and can make called shots.',
+            'Technical Knock': 'You can operate technology through ritual and faith. Use Tech-Use without tools, relying on ritual and prayer.',
+            'Tempered Will': 'Your mind is hardened against psychic assault. Gain bonuses to resist psychic powers and Warp effects.',
+            'Thrown Weapon Training': 'You are trained in thrown weapons (knives, grenades, etc.). Can use these weapons without penalty.',
+            'Total Recall': 'You have perfect memory. Never forget details and can recall information with perfect accuracy.',
+            'Toughness': 'You are exceptionally resilient. Gain bonuses to resist damage and environmental hazards.',
+            'Two-Weapon Wielder': 'You are skilled at fighting with two weapons. Reduce penalties for dual-wielding and can attack with both weapons effectively.',
+            'Unarmed Warrior': 'You are a master of unarmed combat. Gain bonuses to unarmed attacks and can deal significant damage with your fists.',
+            'Unshakeable Faith': 'Your faith in the Emperor is absolute. Gain bonuses to resist corruption and can inspire others through your faith.',
+            'Weapon Tech': 'You understand weapons at a deep level. Can modify, repair, and optimize weapons more effectively.',
+            'Weapon Training': 'You are trained in a specific category of weapons. Can use those weapons without penalty (specify category: Las, Solid Projectile, Shock, etc.).'
+        };
 
         // Skill costs based on matching aptitudes (from Table 2-4: Skill Advances)
         // Known (rank 1), Trained (rank 2), Experienced (rank 3), Veteran (rank 4)
@@ -2510,6 +2652,12 @@
                     document.getElementById('nextButton').style.display = 'block';
                     document.getElementById('finishButton').style.display = 'none';
                 }
+
+                // Scroll to top of modal content
+                const modalContent = document.querySelector('#characterModal .modal-content');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
             }
         }
 
@@ -2531,6 +2679,12 @@
                 }
                 document.getElementById('nextButton').style.display = 'block';
                 document.getElementById('finishButton').style.display = 'none';
+
+                // Scroll to top of modal content
+                const modalContent = document.querySelector('#characterModal .modal-content');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                }
             }
         }
 
@@ -2908,16 +3062,31 @@
             `;
             
             document.getElementById('aptitudeSelection').innerHTML = `
+                <div style="background: rgba(74, 144, 226, 0.1); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4 style="color: #4a90e2; margin-bottom: 10px;">What are Aptitudes?</h4>
+                    <p style="color: #b0b0b0; font-size: 0.9em; line-height: 1.6;">
+                        <strong>Aptitudes determine the cost of advancing characteristics, skills, and talents.</strong> 
+                        When you have matching aptitudes for a skill or talent, it costs less Experience Points (XP) to learn or improve it. 
+                        The more matching aptitudes you have, the cheaper it becomes. Aptitudes are granted by your Homeworld, Background, and Role choices.
+                    </p>
+                </div>
                 <p style="color: #4a90e2; margin-bottom: 15px;">
                     <strong>Total Aptitudes: ${finalApts.length}</strong>
                 </p>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-                    ${finalApts.map(apt => `
-                        <div class="option-card selected" id="apt_${apt.replace(/\s+/g, '_')}">
+                    ${finalApts.map(apt => {
+                        const description = aptitudeDescriptions[apt] || 'No description available.';
+                        return `
+                        <div class="option-card selected" id="apt_${apt.replace(/\s+/g, '_')}" 
+                             style="position: relative; cursor: help;" 
+                             onmouseenter="showTooltip(event, '${apt.replace(/'/g, "\\'")}', '${description.replace(/'/g, "\\'")}')"
+                             onmouseleave="hideTooltip()">
                             <h4>${apt}</h4>
                             <p style="font-size: 0.8em; color: #4a90e2;">Granted</p>
+                            <span style="position: absolute; top: 5px; right: 5px; color: #4a90e2; font-size: 0.8em;">ℹ️</span>
                         </div>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </div>
             `;
         }
@@ -2943,6 +3112,22 @@
             const homeworld = homeworlds[currentCharacter.homeworld];
             const background = backgrounds[currentCharacter.background];
             const role = roles[currentCharacter.role];
+            
+            // Add informational section about skills
+            const skillsInfo = document.getElementById('skillsInfo');
+            if (skillsInfo) {
+                skillsInfo.innerHTML = `
+                    <div style="background: rgba(74, 144, 226, 0.1); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <h4 style="color: #4a90e2; margin-bottom: 10px;">What are Skills?</h4>
+                        <p style="color: #b0b0b0; font-size: 0.9em; line-height: 1.6;">
+                            <strong>Skills represent your character's ability to perform specific tasks.</strong> 
+                            Skills have ranks from 0 (Known) to 3+ (Veteran). Higher ranks make you more effective at using that skill. 
+                            Hover over any skill name (ℹ️) to see what it does. Starting skills from your Background and Role are free. 
+                            Additional skills cost Experience Points (XP) based on how many matching aptitudes you have.
+                        </p>
+                    </div>
+                `;
+            }
             
             const startingSkillsRaw = [...new Set([
                 ...(background?.startingSkills || []),
@@ -3088,13 +3273,18 @@
                 const checkboxDisabled = isStartingSkill && !isUnchosenOption;
                 const inputDisabled = !isStartingSkill && currentLevel === null && !isUnchosenOption;
                 
+                const skillDesc = skillDescriptions[skill] || 'No description available.';
                 return `
                     <div class="skill-item" style="${isStartingSkill && !isUnchosenOption ? 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;' : ''}">
                         <input type="checkbox" id="skill_${skill.replace(/\s+/g, '_')}" 
                                ${isStartingSkill && !isUnchosenOption ? 'checked disabled' : (currentLevel !== null ? 'checked' : '')} 
                                onchange="toggleSkill('${skill}')">
-                        <label for="skill_${skill.replace(/\s+/g, '_')}" style="flex: 1; margin: 0;">
-                            ${skill} ${isStartingSkill && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;">(Starting)</span>' : ''}
+                        <label for="skill_${skill.replace(/\s+/g, '_')}" style="flex: 1; margin: 0; cursor: help;" 
+                               onmouseenter="showTooltip(event, '${skill.replace(/'/g, "\\'")}', '${skillDesc.replace(/'/g, "\\'")}')"
+                               onmouseleave="hideTooltip()">
+                            ${skill} 
+                            <span style="color: #4a90e2; margin-left: 5px; font-size: 0.8em;">ℹ️</span>
+                            ${isStartingSkill && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;">(Starting)</span>' : ''}
                             ${skillChoice && isChosenFromChoice ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Chosen - Free)</span>' : ''}
                             ${isUnchosenOption ? '<span style="color: #ff6b6b; font-size: 0.8em;"> (Other Option - Costs XP)</span>' : ''}
                             ${choiceUI}
@@ -3207,6 +3397,23 @@
             const homeworld = homeworlds[currentCharacter.homeworld];
             const background = backgrounds[currentCharacter.background];
             const role = roles[currentCharacter.role];
+            
+            // Add informational section about talents
+            const talentsInfo = document.getElementById('talentsInfo');
+            if (talentsInfo) {
+                talentsInfo.innerHTML = `
+                    <div style="background: rgba(74, 144, 226, 0.1); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                        <h4 style="color: #4a90e2; margin-bottom: 10px;">What are Talents?</h4>
+                        <p style="color: #b0b0b0; font-size: 0.9em; line-height: 1.6;">
+                            <strong>Talents are special abilities that are always active and don't require tests to use.</strong> 
+                            Unlike skills, talents provide passive bonuses or special capabilities. Examples include weapon training, 
+                            combat abilities, and special traits. Hover over any talent name (ℹ️) to see what it does. 
+                            Starting talents from your Background and Role are free. Additional talents cost Experience Points (XP) 
+                            based on their tier and how many matching aptitudes you have.
+                        </p>
+                    </div>
+                `;
+            }
             
             const startingTalentsRaw = [...new Set([
                 ...(background?.startingTalents || []),
@@ -3338,14 +3545,19 @@
                                  </button>`;
                 }
                 
+                const talentDesc = talentDescriptions[talent] || 'No description available.';
                 return `
                     <div class="talent-item" style="${isGrantedTalent && !isUnchosenOption ? 'background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;' : ''}">
                         <input type="checkbox" id="talent_${talent.replace(/\s+/g, '_')}" 
                                ${hasTalent ? 'checked' : ''} 
                                ${isGrantedTalent && !isUnchosenOption ? 'disabled' : ''}
                                onchange="toggleTalent('${talent}')">
-                        <label for="talent_${talent.replace(/\s+/g, '_')}" style="flex: 1; margin: 0;">
-                            ${talent} ${isGrantedTalent && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;">(Starting)</span>' : ''}
+                        <label for="talent_${talent.replace(/\s+/g, '_')}" style="flex: 1; margin: 0; cursor: help;" 
+                               onmouseenter="showTooltip(event, '${talent.replace(/'/g, "\\'")}', '${talentDesc.replace(/'/g, "\\'")}')"
+                               onmouseleave="hideTooltip()">
+                            ${talent} 
+                            <span style="color: #4a90e2; margin-left: 5px; font-size: 0.8em;">ℹ️</span>
+                            ${isGrantedTalent && !isUnchosenOption ? '<span style="color: #4a90e2; font-size: 0.8em;">(Starting)</span>' : ''}
                             ${talentChoice && isChosenFromChoice ? '<span style="color: #4a90e2; font-size: 0.8em;"> (Chosen - Free)</span>' : ''}
                             ${isUnchosenOption ? '<span style="color: #ff6b6b; font-size: 0.8em;"> (Other Option - Costs XP)</span>' : ''}
                             ${choiceUI}
@@ -5986,6 +6198,48 @@
                 timestampElement.textContent = formattedDate;
             }
         });
+
+        // Tooltip functions for showing descriptions
+        let tooltipElement = null;
+
+        function showTooltip(event, title, description) {
+            // Remove existing tooltip if any
+            if (tooltipElement) {
+                tooltipElement.remove();
+            }
+            
+            // Create tooltip element
+            tooltipElement = document.createElement('div');
+            tooltipElement.className = 'tooltip';
+            tooltipElement.innerHTML = `<strong>${title}</strong><br>${description}`;
+            document.body.appendChild(tooltipElement);
+            
+            // Position tooltip near cursor
+            const x = event.clientX + 10;
+            const y = event.clientY + 10;
+            tooltipElement.style.left = x + 'px';
+            tooltipElement.style.top = y + 'px';
+            
+            // Adjust if tooltip goes off screen
+            setTimeout(() => {
+                if (tooltipElement) {
+                    const rect = tooltipElement.getBoundingClientRect();
+                    if (rect.right > window.innerWidth) {
+                        tooltipElement.style.left = (event.clientX - rect.width - 10) + 'px';
+                    }
+                    if (rect.bottom > window.innerHeight) {
+                        tooltipElement.style.top = (event.clientY - rect.height - 10) + 'px';
+                    }
+                }
+            }, 0);
+        }
+
+        function hideTooltip() {
+            if (tooltipElement) {
+                tooltipElement.remove();
+                tooltipElement = null;
+            }
+        }
     </script>
     <div class="last-updated">
         <strong>Last Updated:</strong>
