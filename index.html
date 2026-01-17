@@ -776,10 +776,17 @@
                             <div>
                                 <h4 style="color: #4a90e2; margin-bottom: 10px;">Additional Equipment</h4>
                                 <div id="equipmentSelectionList" style="margin-bottom: 10px;"></div>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="text" id="newEquipmentInput" placeholder="Enter equipment name..." 
-                                           style="flex: 1; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
-                                    <button type="button" onclick="addEquipmentToCharacter()" style="padding: 8px 20px;">Add Equipment</button>
+                                <div id="addEquipmentSectionCreation" style="margin-bottom: 10px;"></div>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button type="button" onclick="showAddEquipmentMenuCreation()" style="flex: 1; min-width: 150px; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                        Add from Rulebook
+                                    </button>
+                                    <button type="button" onclick="showManualEquipmentFormCreation()" style="flex: 1; min-width: 150px; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                        Create Custom Equipment
+                                    </button>
+                                    <button type="button" onclick="showImportEquipmentCodeCreation()" style="flex: 1; min-width: 150px; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                        Import Equipment Code
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -3486,7 +3493,7 @@
                 const additionalEquipment = (currentCharacter.equipment || []).filter(item => !item.isStarting);
                 equipmentList.innerHTML = additionalEquipment.length > 0 ? `
                     <div style="margin-bottom: 10px;">
-                        ${renderEquipmentItems(additionalEquipment, false)}
+                        ${renderEquipmentItemsCreation(additionalEquipment)}
                     </div>
                 ` : '<p style="color: #888; margin-bottom: 10px; font-style: italic;">No additional equipment added yet.</p>';
             }
@@ -3562,33 +3569,82 @@
             renderEquipmentSelection();
         }
 
-        function addEquipmentToCharacter() {
-            const input = document.getElementById('newEquipmentInput');
-            if (!input) return;
+        // Equipment functions for character creation
+        function showAddEquipmentMenuCreation() {
+            const section = document.getElementById('addEquipmentSectionCreation');
+            section.style.display = 'block';
             
-            const equipmentName = input.value.trim();
-            if (!equipmentName) {
-                alert('Please enter equipment name.');
-                return;
-            }
+            // Combine all equipment from database
+            const allEquipment = {
+                ...equipmentDatabase.weapons,
+                ...equipmentDatabase.meleeWeapons,
+                ...equipmentDatabase.armor,
+                ...equipmentDatabase.gear
+            };
+            
+            const categories = {
+                'Ranged Weapons': Object.keys(equipmentDatabase.weapons),
+                'Melee Weapons': Object.keys(equipmentDatabase.meleeWeapons),
+                'Armor': Object.keys(equipmentDatabase.armor),
+                'Gear': Object.keys(equipmentDatabase.gear)
+            };
+            
+            section.innerHTML = `
+                <h4 style="color: #4a90e2; margin-bottom: 10px;">Select Equipment from Rulebook</h4>
+                ${Object.entries(categories).map(([category, items]) => `
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #b0b0b0;">${category}</strong>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 8px;">
+                            ${items.map(itemName => {
+                                const item = allEquipment[itemName];
+                                return `
+                                    <button onclick="addEquipmentFromDatabaseCreation('${itemName}')" 
+                                            style="padding: 8px; text-align: left; background: rgba(255,255,255,0.1); border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer; color: #e0e0e0;">
+                                        <strong>${itemName}</strong>
+                                        <div style="font-size: 0.8em; color: #b0b0b0; margin-top: 3px;">
+                                            ${item.type === 'weapon' ? (item.category === 'ranged' ? `${item.class} | ${item.damage}` : `${item.damage}`) : ''}
+                                            ${item.type === 'armor' ? `AP ${item.ap} | ${item.locations}` : ''}
+                                            ${item.type === 'gear' ? item.weight || '' : ''}
+                                        </div>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('')}
+                <button onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
+                        style="margin-top: 10px; padding: 8px 15px; background: rgba(255,107,107,0.3); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
+                    Cancel
+                </button>
+            `;
+        }
+
+        function addEquipmentFromDatabaseCreation(itemName) {
+            const allEquipment = {
+                ...equipmentDatabase.weapons,
+                ...equipmentDatabase.meleeWeapons,
+                ...equipmentDatabase.armor,
+                ...equipmentDatabase.gear
+            };
+            
+            const item = allEquipment[itemName];
+            if (!item) return;
             
             if (!currentCharacter.equipment) {
                 currentCharacter.equipment = [];
             }
             
-            // Create equipment object (not just a string)
-            const equipmentObj = {
-                name: equipmentName,
-                type: 'gear',
-                category: 'gear',
-                custom: true,
+            const equipmentItem = {
+                ...item,
+                name: itemName,
+                source: 'rulebook',
                 isStarting: false
             };
             
-            // Check if already exists (by name)
-            const exists = currentCharacter.equipment.some(item => {
-                const itemName = typeof item === 'string' ? item : (item.name || '');
-                return itemName.toLowerCase() === equipmentName.toLowerCase();
+            // Check if already exists
+            const exists = currentCharacter.equipment.some(eq => {
+                const eqName = typeof eq === 'string' ? eq : (eq.name || '');
+                return eqName.toLowerCase() === itemName.toLowerCase() && !eq.isStarting;
             });
             
             if (exists) {
@@ -3596,8 +3652,232 @@
                 return;
             }
             
-            currentCharacter.equipment.push(equipmentObj);
-            input.value = '';
+            currentCharacter.equipment.push(equipmentItem);
+            document.getElementById('addEquipmentSectionCreation').style.display = 'none';
+            renderEquipmentSelection();
+        }
+
+        function showManualEquipmentFormCreation() {
+            const section = document.getElementById('addEquipmentSectionCreation');
+            section.style.display = 'block';
+            
+            section.innerHTML = `
+                <h4 style="color: #4a90e2; margin-bottom: 10px;">Create Custom Equipment</h4>
+                <form id="manualEquipmentFormCreation" onsubmit="addManualEquipmentCreation(event)">
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Name *</label>
+                        <input type="text" id="eqNameCreation" required style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Type *</label>
+                        <select id="eqTypeCreation" required onchange="updateEquipmentFormCreation()" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            <option value="">Select Type</option>
+                            <option value="weapon">Weapon</option>
+                            <option value="armor">Armor</option>
+                            <option value="gear">Gear</option>
+                        </select>
+                    </div>
+                    <div id="weaponFieldsCreation" style="display: none;">
+                        <div style="margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Category</label>
+                            <select id="eqCategoryCreation" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                                <option value="ranged">Ranged</option>
+                                <option value="melee">Melee</option>
+                            </select>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Class</label>
+                                <input type="text" id="eqClassCreation" placeholder="Pistol, Basic, Melee" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Range</label>
+                                <input type="text" id="eqRangeCreation" placeholder="30m, —" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Damage</label>
+                                <input type="text" id="eqDamageCreation" placeholder="1d10+2" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Penetration</label>
+                                <input type="text" id="eqPenCreation" placeholder="E 0, R 2" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Special Qualities</label>
+                            <input type="text" id="eqSpecialCreation" placeholder="Reliable, Tearing, etc." style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                        </div>
+                    </div>
+                    <div id="armorFieldsCreation" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Locations</label>
+                                <input type="text" id="eqLocationsCreation" placeholder="Body, All, Arms, Body" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">AP</label>
+                                <input type="number" id="eqAPCreation" min="0" placeholder="3" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Max Agility</label>
+                            <input type="number" id="eqMaxAgCreation" placeholder="60, —" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Weight</label>
+                            <input type="text" id="eqWeightCreation" placeholder="5kg" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Availability</label>
+                            <select id="eqAvailabilityCreation" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;">
+                                <option value="Plentiful">Plentiful</option>
+                                <option value="Common">Common</option>
+                                <option value="Average">Average</option>
+                                <option value="Scarce">Scarce</option>
+                                <option value="Rare">Rare</option>
+                                <option value="Very Rare">Very Rare</option>
+                                <option value="Extremely Rare">Extremely Rare</option>
+                                <option value="Near Unique">Near Unique</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Description</label>
+                        <textarea id="eqDescriptionCreation" rows="3" placeholder="Equipment description..." style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                            Add Equipment
+                        </button>
+                        <button type="button" onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
+                                style="padding: 10px; background: rgba(255,107,107,0.3); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `;
+        }
+
+        function updateEquipmentFormCreation() {
+            const type = document.getElementById('eqTypeCreation').value;
+            const weaponFields = document.getElementById('weaponFieldsCreation');
+            const armorFields = document.getElementById('armorFieldsCreation');
+            if (weaponFields) weaponFields.style.display = type === 'weapon' ? 'block' : 'none';
+            if (armorFields) armorFields.style.display = type === 'armor' ? 'block' : 'none';
+        }
+
+        function addManualEquipmentCreation(e) {
+            e.preventDefault();
+            
+            if (!currentCharacter.equipment) {
+                currentCharacter.equipment = [];
+            }
+            
+            const equipment = {
+                name: document.getElementById('eqNameCreation').value,
+                type: document.getElementById('eqTypeCreation').value,
+                custom: true,
+                source: 'manual',
+                isStarting: false
+            };
+            
+            if (equipment.type === 'weapon') {
+                equipment.category = document.getElementById('eqCategoryCreation').value;
+                equipment.class = document.getElementById('eqClassCreation').value;
+                equipment.range = document.getElementById('eqRangeCreation').value;
+                equipment.damage = document.getElementById('eqDamageCreation').value;
+                equipment.penetration = document.getElementById('eqPenCreation').value;
+                equipment.special = document.getElementById('eqSpecialCreation').value;
+            } else if (equipment.type === 'armor') {
+                equipment.locations = document.getElementById('eqLocationsCreation').value;
+                equipment.ap = parseInt(document.getElementById('eqAPCreation').value) || 0;
+                const maxAg = document.getElementById('eqMaxAgCreation').value;
+                equipment.maxAg = maxAg === '—' || maxAg === '' ? null : parseInt(maxAg);
+            }
+            
+            equipment.weight = document.getElementById('eqWeightCreation').value;
+            equipment.availability = document.getElementById('eqAvailabilityCreation').value;
+            equipment.description = document.getElementById('eqDescriptionCreation').value;
+            
+            // Check if already exists
+            const exists = currentCharacter.equipment.some(eq => {
+                const eqName = typeof eq === 'string' ? eq : (eq.name || '');
+                return eqName.toLowerCase() === equipment.name.toLowerCase() && !eq.isStarting;
+            });
+            
+            if (exists) {
+                alert('This equipment is already in your list.');
+                return;
+            }
+            
+            currentCharacter.equipment.push(equipment);
+            document.getElementById('addEquipmentSectionCreation').style.display = 'none';
+            renderEquipmentSelection();
+        }
+
+        function showImportEquipmentCodeCreation() {
+            const section = document.getElementById('addEquipmentSectionCreation');
+            section.style.display = 'block';
+            
+            section.innerHTML = `
+                <h4 style="color: #4a90e2; margin-bottom: 10px;">Import Equipment Code</h4>
+                <p style="color: #b0b0b0; margin-bottom: 15px; font-size: 0.9em;">
+                    Enter an equipment code provided by your GM to import a custom piece of equipment.
+                </p>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #b0b0b0;">Equipment Code</label>
+                    <textarea id="equipmentCodeInputCreation" rows="4" placeholder="Paste equipment code here..." 
+                              style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px; font-family: monospace;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="importEquipmentCodeCreation()" style="flex: 1; padding: 10px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                        Import
+                    </button>
+                    <button onclick="document.getElementById('addEquipmentSectionCreation').style.display='none'" 
+                            style="padding: 10px; background: rgba(255,107,107,0.3); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
+            `;
+        }
+
+        function importEquipmentCodeCreation() {
+            const code = document.getElementById('equipmentCodeInputCreation').value.trim();
+            if (!code) {
+                alert('Please enter an equipment code.');
+                return;
+            }
+            
+            const equipment = decodeEquipmentCode(code);
+            if (!equipment) {
+                alert('Invalid equipment code. Please check the code and try again.');
+                return;
+            }
+            
+            if (!currentCharacter.equipment) {
+                currentCharacter.equipment = [];
+            }
+            
+            equipment.source = 'code';
+            equipment.isStarting = false;
+            
+            // Check if already exists
+            const exists = currentCharacter.equipment.some(eq => {
+                const eqName = typeof eq === 'string' ? eq : (eq.name || '');
+                return eqName.toLowerCase() === equipment.name.toLowerCase() && !eq.isStarting;
+            });
+            
+            if (exists) {
+                alert('This equipment is already in your list.');
+                return;
+            }
+            
+            currentCharacter.equipment.push(equipment);
+            document.getElementById('addEquipmentSectionCreation').style.display = 'none';
             renderEquipmentSelection();
         }
 
@@ -3894,7 +4174,7 @@
                 });
             }
             
-            let totalSpent = 0;
+            let skillSpent = 0;
             // Calculate skill costs (excluding starting/granted skills)
             Object.keys(currentCharacter.skills).forEach(skill => {
                 if (grantedSkills.has(skill)) {
@@ -3903,31 +4183,48 @@
                 
                 const rank = currentCharacter.skills[skill] || 0;
                 if (rank > 0) {
-                    totalSpent += calculateTotalSkillCost(skill, rank);
+                    skillSpent += calculateTotalSkillCost(skill, rank);
                 }
             });
             
             // Calculate talent costs (excluding starting/granted talents)
+            let talentSpent = 0;
             if (currentCharacter.talents) {
                 currentCharacter.talents.forEach(talent => {
                     if (!grantedTalents.has(talent)) {
-                        totalSpent += calculateTalentCostForTalent(talent);
+                        talentSpent += calculateTalentCostForTalent(talent);
                     }
                 });
             }
             
+            // Calculate total spent (skills + talents)
+            const totalSpent = skillSpent + talentSpent;
+            
+            // Update xpRemaining - use the base 1000 minus all spending
             currentCharacter.xpRemaining = 1000 - totalSpent;
+            
+            // Update the display
             const xpDisplay = document.getElementById('xpRemainingTalents');
             if (xpDisplay) {
                 xpDisplay.textContent = currentCharacter.xpRemaining;
             }
             
+            // Also update the skills page XP display if it exists (for consistency)
+            const skillsXPDisplay = document.getElementById('xpRemaining');
+            if (skillsXPDisplay) {
+                skillsXPDisplay.textContent = currentCharacter.xpRemaining;
+            }
+            
             if (currentCharacter.xpRemaining < 0) {
                 const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
                 if (xpContainer) xpContainer.classList.add('warning');
+                const skillsXPContainer = document.getElementById('xpRemaining')?.parentElement;
+                if (skillsXPContainer) skillsXPContainer.classList.add('warning');
             } else {
                 const xpContainer = document.getElementById('xpRemainingTalents')?.parentElement;
                 if (xpContainer) xpContainer.classList.remove('warning');
+                const skillsXPContainer = document.getElementById('xpRemaining')?.parentElement;
+                if (skillsXPContainer) skillsXPContainer.classList.remove('warning');
             }
         }
 
@@ -4788,6 +5085,104 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        // Render equipment items during character creation (doesn't require currentManagingCharId)
+        function renderEquipmentItemsCreation(items) {
+            if (!items || items.length === 0) {
+                return '<div style="color: #888; font-style: italic; padding: 10px;">None</div>';
+            }
+            
+            return items.map((item, idx) => {
+                const itemName = typeof item === 'string' ? item : (item.name || 'Unnamed Item');
+                const itemObj = typeof item === 'string' ? { name: item, type: 'gear' } : item;
+                
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 5px; background: rgba(255,255,255,0.05); border-radius: 3px;">
+                        <div style="flex: 1;">
+                            <strong>${itemName}</strong>
+                            ${itemObj.type === 'weapon' ? `<div style="font-size: 0.85em; color: #b0b0b0;">
+                                ${itemObj.category === 'ranged' ? `${itemObj.class || ''} | ${itemObj.range || ''} | ${itemObj.damage || ''}` : 
+                                  `${itemObj.class || ''} | ${itemObj.damage || ''}`}
+                            </div>` : ''}
+                            ${itemObj.type === 'armor' ? `<div style="font-size: 0.85em; color: #b0b0b0;">
+                                ${itemObj.locations || ''} | AP ${itemObj.ap || ''}
+                            </div>` : ''}
+                            ${itemObj.weight ? `<div style="font-size: 0.8em; color: #888; margin-top: 3px;">
+                                Weight: ${itemObj.weight} | Availability: ${itemObj.availability || 'Unknown'}
+                            </div>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="editEquipmentItemCreation(${idx})" style="padding: 4px 8px; font-size: 12px; background: rgba(74, 144, 226, 0.3); color: #4a90e2; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;">
+                                Edit
+                            </button>
+                            <button onclick="removeEquipmentItemCreation(${idx})" style="padding: 4px 8px; font-size: 12px; background: rgba(255, 107, 107, 0.3); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 3px; cursor: pointer;">
+                                Remove
+                            </button>
+                            <button onclick="exportEquipmentCodeCreation(${idx})" style="padding: 4px 8px; font-size: 12px; background: rgba(255, 255, 255, 0.1); color: #e0e0e0; border: 1px solid #4a90e2; border-radius: 3px; cursor: pointer;" title="Generate code for DM sharing">
+                                Code
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function editEquipmentItemCreation(index) {
+            if (!currentCharacter.equipment || index < 0 || index >= currentCharacter.equipment.length) return;
+            
+            const additionalEquipment = currentCharacter.equipment.filter(item => !item.isStarting);
+            if (index >= additionalEquipment.length) return;
+            
+            const item = additionalEquipment[index];
+            const fullIndex = currentCharacter.equipment.findIndex(eq => eq === item);
+            
+            // For now, show a simple edit prompt - could be enhanced with full form
+            const newName = prompt('Edit equipment name:', item.name || '');
+            if (newName !== null && newName.trim()) {
+                if (fullIndex >= 0) {
+                    currentCharacter.equipment[fullIndex].name = newName.trim();
+                    renderEquipmentSelection();
+                }
+            }
+        }
+
+        function removeEquipmentItemCreation(index) {
+            if (!confirm('Remove this equipment?')) return;
+            if (!currentCharacter.equipment) return;
+            
+            const additionalEquipment = currentCharacter.equipment.filter(item => !item.isStarting);
+            if (index < 0 || index >= additionalEquipment.length) return;
+            
+            const itemToRemove = additionalEquipment[index];
+            const fullIndex = currentCharacter.equipment.findIndex(eq => eq === itemToRemove);
+            
+            if (fullIndex >= 0) {
+                currentCharacter.equipment.splice(fullIndex, 1);
+                renderEquipmentSelection();
+            }
+        }
+
+        function exportEquipmentCodeCreation(index) {
+            if (!currentCharacter.equipment || index < 0) return;
+            
+            const additionalEquipment = currentCharacter.equipment.filter(item => !item.isStarting);
+            if (index >= additionalEquipment.length) return;
+            
+            const equipment = additionalEquipment[index];
+            const code = encodeEquipmentCode(equipment);
+            
+            if (code) {
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Equipment code copied to clipboard!');
+            } else {
+                alert('Failed to generate equipment code.');
+            }
         }
 
         let currentManagingCharId = null;
