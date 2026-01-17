@@ -3167,6 +3167,8 @@
                 } else if (currentStep === 7) {
                     renderSkillsSelection();
                 } else if (currentStep === 8) {
+                    // Ensure XP is calculated from skills before showing talents page
+                    updateXPDisplay();
                     renderTalentsSelection();
                 } else if (currentStep === 9) {
                     renderDivination();
@@ -4924,15 +4926,18 @@
             
             let skillSpent = 0;
             // Calculate skill costs (excluding starting/granted skills)
+            // Use the same logic as updateXPDisplay() to ensure consistency
             Object.keys(currentCharacter.skills).forEach(skill => {
                 if (grantedSkills.has(skill)) {
                     return; // Starting skills are free
                 }
                 
                 const rank = currentCharacter.skills[skill] || 0;
-                if (rank > 0) {
-                    skillSpent += calculateTotalSkillCost(skill, rank);
-                }
+                // Calculate cumulative cost for the skill up to current rank
+                // Rank 0 = Known, Rank 1 = Trained, Rank 2 = Experienced, Rank 3 = Veteran
+                // Costs are cumulative and based on matching aptitudes
+                // Include rank 0 because learning a skill (even at rank 0) costs XP
+                skillSpent += calculateTotalSkillCost(skill, rank);
             });
             
             // Calculate talent costs (excluding starting/granted talents)
